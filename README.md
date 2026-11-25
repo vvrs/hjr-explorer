@@ -1,5 +1,7 @@
 # Hamilton-Jacobi Reachability & PINNs — Interactive Monograph
 
+**Live Interactive Site:** [https://vvrs.github.io/hjr-explorer/](https://vvrs.github.io/hjr-explorer/)
+
 An interactive first-principles textbook chapter and simulation laboratory building **Hamilton-Jacobi Reachability (HJR)**, **Control Barrier Functions (CBFs / CBVFs)**, **Artificial Potential Fields (APFs)**, **Physics-Informed Neural Networks (DeepReach)**, **cluttered-environment neural HJB formulations**, and **industrial aerial autonomy patterns** from simple approaches up to modern certified methods.
 
 ## Zero-Server Local Usage (`file://` Ready)
