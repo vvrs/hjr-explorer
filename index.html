@@ -12,17 +12,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="paged-mode">
 
 <header class="topbar">
   <div class="progress-track"><div class="progress-bar" id="reading-progress"></div></div>
   <div class="topbar-inner">
-    <a class="brand" href="#top">
+    <a class="brand" href="#ch-question" id="brand-home">
       <span class="brand-main">Hamilton-Jacobi Reachability</span>
       <span class="brand-sub">First Principles &amp; Neural Solvers</span>
     </a>
     <nav class="toc-nav" aria-label="Chapters">
-      <a href="#ch-question">1 Point of No Return</a>
+      <a href="#ch-question" class="active">1 Point of No Return</a>
       <a href="#ch-levelset">2 3D Level Sets</a>
       <a href="#ch-models">3 Vehicle Models</a>
       <a href="#ch-drones">4 Planning &amp; Control</a>
@@ -34,7 +34,11 @@
       <a href="#ch-quiz">10 Diagnostic</a>
     </nav>
     <div class="header-actions">
-      <button class="theme-btn" id="theme-toggle" type="button">☾ Dark mode</button>
+      <div class="font-sizer" role="group" aria-label="Adjust reading font size">
+        <button class="font-btn" id="font-dec" type="button" title="Smaller text" aria-label="Decrease text size">A−</button>
+        <button class="font-btn" id="font-inc" type="button" title="Larger text" aria-label="Increase text size">A+</button>
+      </div>
+      <button class="theme-btn" id="theme-toggle" type="button">☾ Dark</button>
       <button class="tutor-open-btn" id="tutor-open" type="button">✦ Ask Tutor</button>
     </div>
   </div>
@@ -45,7 +49,7 @@
   <!-- =====================================================================
        HERO + LAB 1: SYNCHRONIZED QUADROTOR + PHASE-SPACE POINT OF NO RETURN
        ===================================================================== -->
-  <section class="hero" id="ch-question">
+  <section class="hero chapter-active" id="ch-question">
     <div class="hero-copy">
       <div class="eyebrow"><span class="chap-num">Interactive Monograph</span> Safe Autonomy from First Principles</div>
       <h1>Hamilton-Jacobi Reachability, <span class="hero-title-accent">Engineered &amp; Learned</span></h1>
@@ -58,20 +62,20 @@
       </p>
 
       <div class="roadmap-grid">
-        <div class="roadmap-item">
-          <span class="kicker">01 · Foundations</span>
+        <div class="roadmap-item" data-goto="#ch-levelset" role="button" tabindex="0">
+          <span class="kicker">01 · Foundations →</span>
           <p>Lift failure sets into 3D value surfaces \(V(x,\tau)\) to handle split/merge geometry, kinks, and adversarial games.</p>
         </div>
-        <div class="roadmap-item">
-          <span class="kicker">02 · Classical to Optimal</span>
+        <div class="roadmap-item" data-goto="#ch-drones" role="button" tabindex="0">
+          <span class="kicker">02 · Classical to Optimal →</span>
           <p>Progress from holonomic paths and potential fields up to CBF-QPs, Reach-Avoid landing funnels, and FaSTrack.</p>
         </div>
-        <div class="roadmap-item">
-          <span class="kicker">03 · Neural PDE Solvers</span>
+        <div class="roadmap-item" data-goto="#ch-pinns" role="button" tabindex="0">
+          <span class="kicker">03 · Neural PDE Solvers →</span>
           <p>Understand why grids struggle past 5D, train a live PINN in your browser, and formulate well-posed neural HJB losses.</p>
         </div>
-        <div class="roadmap-item">
-          <span class="kicker">04 · Production Autonomy</span>
+        <div class="roadmap-item" data-goto="#ch-production" role="button" tabindex="0">
+          <span class="kicker">04 · Production Autonomy →</span>
           <p>Certify learned value functions statistically and choose between closed forms, 4D lookup tables, and verified PINNs.</p>
         </div>
       </div>
@@ -839,6 +843,25 @@
     </div>
     <div class="card-grid" id="quiz-container"></div>
   </section>
+
+  <!-- =====================================================================
+       BOTTOM SECTION PAGER (PREVIOUS | CURRENT | NEXT)
+       ===================================================================== -->
+  <nav class="chapter-pager" id="chapter-pager" aria-label="Section navigation">
+    <button class="pager-btn prev" id="pager-prev" type="button">
+      <span class="pager-kicker">← Previous Section</span>
+      <span class="pager-title" id="pager-prev-title">—</span>
+    </button>
+    <div class="pager-current" id="pager-current">
+      <span class="pager-kicker" id="pager-cur-kicker">Section 1 of 10</span>
+      <span class="pager-cur-title" id="pager-cur-title">1 · Point of No Return</span>
+      <button class="pager-mode-link" id="pager-toggle-all" type="button">View all sections on one page</button>
+    </div>
+    <button class="pager-btn next" id="pager-next" type="button">
+      <span class="pager-kicker">Next Section →</span>
+      <span class="pager-title" id="pager-next-title">2 · 3D Level Sets</span>
+    </button>
+  </nav>
 
   <footer>
     <p>

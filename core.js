@@ -489,40 +489,41 @@
     ctx.restore();
   };
 
-  /* ---------- DOM Ready: Theme Button, Progress Bar, Scroll-Spy, KaTeX ---------- */
+  /* ---------- DOM Ready: Theme, Font Size, Tabbed Chapters, Pager & KaTeX ---------- */
   window.addEventListener("DOMContentLoaded", () => {
     const btn = HJR.$("#theme-toggle");
-    if (btn) {
-      btn.innerHTML = COL.isDark ? "☀ Light mode" : "☾ Dark mode";
-      btn.addEventListener("click", () => applyTheme(COL.isDark ? "light" : "dark"));
-    }
-
-    const pbar = HJR.$("#reading-progress");
-    const updateScroll = () => {
-      if (!pbar) return;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = max > 0 ? HJR.clamp((window.scrollY / max) * 100, 0, 100) : 0;
-      pbar.style.width = pct.toFixed(1) + "%";
+    const syncThemeBtn = () => {
+      if (btn) btn.innerHTML = COL.isDark ? "☀ Light" : "☾ Dark";
     };
-    window.addEventListener("scroll", updateScroll, { passive: true });
-    updateScroll();
-
-    const navLinks = HJR.$$(".toc-nav a");
-    const sections = navLinks.map((a) => HJR.$(a.getAttribute("href")));
-    if ("IntersectionObserver" in window && sections.length) {
-      const obs = new IntersectionObserver(
-        (entries) => {
-          for (const ent of entries) {
-            if (ent.isIntersecting) {
-              const idx = sections.indexOf(ent.target);
-              navLinks.forEach((a, j) => a.classList.toggle("active", j === idx));
-            }
-          }
-        },
-        { rootMargin: "-25% 0px -62% 0px" }
-      );
-      sections.forEach((s) => s && obs.observe(s));
+    syncThemeBtn();
+    if (btn) {
+      btn.addEventListener("click", () => {
+        applyTheme(COL.isDark ? "light" : "dark");
+        syncThemeBtn();
+      });
     }
+
+    /* Font-size controls (A- / A+) */
+    const FONT_SCALES = ["94%", "100%", "107%", "114%", "122%"];
+    let fontIdx = (() => {
+      try {
+        const v = parseInt(localStorage.getItem("hjr-font-idx"), 10);
+        return Number.isFinite(v) ? HJR.clamp(v, 0, FONT_SCALES.length - 1) : 1;
+      } catch (_) {
+        return 1;
+      }
+    })();
+    const decBtn = HJR.$("#font-dec");
+    const incBtn = HJR.$("#font-inc");
+    const applyFontScale = () => {
+      document.documentElement.style.fontSize = FONT_SCALES[fontIdx];
+      if (decBtn) decBtn.disabled = fontIdx <= 0;
+      if (incBtn) incBtn.disabled = fontIdx >= FONT_SCALES.length - 1;
+      try { localStorage.setItem("hjr-font-idx", String(fontIdx)); } catch (_) {}
+    };
+    applyFontScale();
+    if (decBtn) decBtn.addEventListener("click", () => { if (fontIdx > 0) { fontIdx--; applyFontScale(); } });
+    if (incBtn) incBtn.addEventListener("click", () => { if (fontIdx < FONT_SCALES.length - 1) { fontIdx++; applyFontScale(); } });
 
     HJR.typeset = (el = document.body) => {
       if (window.renderMathInElement && el) {
@@ -535,6 +536,144 @@
         });
       }
     };
+
+    /* Tabbed Single-Section Pagination + Bottom Pager (Prev | Current | Next) */
+    const pbar = HJR.$("#reading-progress");
+    const navLinks = HJR.$$(".toc-nav a");
+    const sections = navLinks.map((a) => HJR.$(a.getAttribute("href")));
+    const prevBtn = HJR.$("#pager-prev");
+    const nextBtn = HJR.$("#pager-next");
+    const prevTitle = HJR.$("#pager-prev-title");
+    const nextTitle = HJR.$("#pager-next-title");
+    const curKicker = HJR.$("#pager-cur-kicker");
+    const curTitle = HJR.$("#pager-cur-title");
+    const toggleAllBtn = HJR.$("#pager-toggle-all");
+
+    const chapterLabels = navLinks.map((a, idx) => {
+      const raw = a.textContent.trim().replace(/^(\d+)\s+/, "$1 · ");
+      const sec = sections[idx];
+      const hd = sec ? HJR.$("h2, h1", sec) : null;
+      return { short: raw, full: hd ? hd.textContent.trim() : raw, hash: a.getAttribute("href") };
+    });
+
+    let curChap = 0;
+    let pagedMode = document.body.classList.contains("paged-mode");
+
+    function updateProgressBar() {
+      if (!pbar) return;
+      if (pagedMode) {
+        const pct = ((curChap + 1) / sections.length) * 100;
+        pbar.style.width = pct.toFixed(1) + "%";
+      } else {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? HJR.clamp((window.scrollY / max) * 100, 0, 100) : 0;
+        pbar.style.width = pct.toFixed(1) + "%";
+      }
+    }
+
+    function renderPager() {
+      navLinks.forEach((a, j) => a.classList.toggle("active", j === curChap));
+      const activeLink = navLinks[curChap];
+      if (activeLink && activeLink.scrollIntoView) {
+        activeLink.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+      }
+      if (curKicker) curKicker.textContent = pagedMode ? `Current · Section ${curChap + 1} of ${sections.length}` : `All ${sections.length} Sections Shown`;
+      if (curTitle) curTitle.textContent = chapterLabels[curChap]?.short || "";
+
+      if (prevBtn) {
+        const hasPrev = curChap > 0;
+        prevBtn.disabled = !hasPrev;
+        prevBtn.style.visibility = pagedMode && !hasPrev ? "hidden" : "visible";
+        if (prevTitle) prevTitle.textContent = hasPrev ? chapterLabels[curChap - 1].short : "Start of Monograph";
+      }
+      if (nextBtn) {
+        const hasNext = curChap < sections.length - 1;
+        nextBtn.disabled = !hasNext;
+        nextBtn.style.visibility = pagedMode && !hasNext ? "hidden" : "visible";
+        if (nextTitle) nextTitle.textContent = hasNext ? chapterLabels[curChap + 1].short : "End of Monograph";
+      }
+      if (toggleAllBtn) {
+        toggleAllBtn.textContent = pagedMode ? "View all sections on one page" : "Return to single-section view";
+      }
+      updateProgressBar();
+    }
+
+    HJR.goToChapter = (idx, opts = {}) => {
+      const target = HJR.clamp(idx, 0, sections.length - 1);
+      curChap = target;
+      sections.forEach((s, j) => s && s.classList.toggle("chapter-active", j === curChap));
+      renderPager();
+
+      if (opts.updateHash !== false && chapterLabels[curChap]) {
+        try { history.replaceState(null, "", chapterLabels[curChap].hash); } catch (_) {}
+      }
+      if (opts.scroll !== false) {
+        if (pagedMode) window.scrollTo({ top: 0, behavior: opts.instant ? "auto" : "smooth" });
+        else if (sections[curChap]) sections[curChap].scrollIntoView({ behavior: "smooth" });
+      }
+      const sec = sections[curChap];
+      if (sec) HJR.typeset(sec);
+      requestAnimationFrame(() => {
+        for (const fn of redrawCallbacks) {
+          try { fn(); } catch (e) { console.error(e); }
+        }
+      });
+    };
+
+    navLinks.forEach((a, idx) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        HJR.goToChapter(idx);
+      });
+    });
+
+    const brandHome = HJR.$("#brand-home");
+    if (brandHome) {
+      brandHome.addEventListener("click", (e) => {
+        e.preventDefault();
+        HJR.goToChapter(0);
+      });
+    }
+
+    HJR.$$("[data-goto]").forEach((card) => {
+      const jump = () => {
+        const h = card.getAttribute("data-goto");
+        const idx = chapterLabels.findIndex((c) => c.hash === h);
+        if (idx >= 0) HJR.goToChapter(idx);
+      };
+      card.addEventListener("click", jump);
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); }
+      });
+    });
+
+    if (prevBtn) prevBtn.addEventListener("click", () => { if (curChap > 0) HJR.goToChapter(curChap - 1); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { if (curChap < sections.length - 1) HJR.goToChapter(curChap + 1); });
+
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener("click", () => {
+        pagedMode = !pagedMode;
+        document.body.classList.toggle("paged-mode", pagedMode);
+        renderPager();
+        requestAnimationFrame(() => {
+          for (const fn of redrawCallbacks) { try { fn(); } catch (_) {} }
+        });
+      });
+    }
+
+    window.addEventListener("scroll", () => { if (!pagedMode) updateProgressBar(); }, { passive: true });
+    window.addEventListener("hashchange", () => {
+      const idx = chapterLabels.findIndex((c) => c.hash === window.location.hash);
+      if (idx >= 0 && idx !== curChap) HJR.goToChapter(idx, { updateHash: false });
+    });
+
+    const startIdx = (() => {
+      const h = window.location.hash;
+      const idx = chapterLabels.findIndex((c) => c.hash === h);
+      return idx >= 0 ? idx : 0;
+    })();
+    HJR.goToChapter(startIdx, { updateHash: false, scroll: false, instant: true });
+
     HJR.typeset(document.body);
     window.addEventListener("load", () => HJR.typeset(document.body));
   });
