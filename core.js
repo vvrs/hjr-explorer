@@ -59,7 +59,7 @@
   const savedTheme = (() => {
     try { return localStorage.getItem("hjr-theme"); } catch (_) { return null; }
   })();
-  const initialTheme = savedTheme || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "dark");
+  const initialTheme = savedTheme || "light";
   document.documentElement.setAttribute("data-theme", initialTheme);
   syncThemeColors();
 
@@ -209,8 +209,8 @@
     };
     P.axes = (xlabel, ylabel, xticks, yticks, grid = false) => {
       ctx.save();
-      const fontBody = getComputedStyle(document.body).fontFamily;
-      ctx.font = "11.5px " + fontBody;
+      const fontUI = getComputedStyle(document.documentElement).getPropertyValue("--sans").trim() || "Inter, sans-serif";
+      ctx.font = "11.5px " + fontUI;
       if (grid) {
         ctx.strokeStyle = HJR.rgba(COL.line_rgb, 0.35);
         ctx.lineWidth = 1;
@@ -242,7 +242,7 @@
       }
       ctx.strokeRect(P.px, P.py, P.pw, P.ph);
       ctx.fillStyle = COL["ink-2"];
-      ctx.font = "500 12px " + fontBody;
+      ctx.font = "500 12px " + fontUI;
       if (xlabel) {
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";

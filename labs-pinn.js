@@ -1,7 +1,7 @@
 /* ==========================================================================
    labs-pinn.js — Interactive Labs 06 to 10:
      Lab 06: Live 60fps In-Browser PINN Studio (Exact 2nd-Order Autodiff + Adam)
-     Lab 07: Forensic Interactive Lab on arXiv:2512.01897 (NeuroHJR)
+     Lab 07: Cluttered Navigation Progression (Uncoupled vs Lookahead vs Eikonal HJB)
      Lab 08: Conformal / Scenario Verification Explorer (Lin & Bansal)
      Lab 09: Production Drone Envelope & Architecture Sizer
      Lab 10: 5-Scenario Autonomy Lead Engineering Diagnostic
@@ -437,7 +437,7 @@
     })();
 
     /* =====================================================================
-       LAB 07: FORENSIC AUDIT OF ARXIV:2512.01897 (NEUROHJR)
+       LAB 07: CLUTTERED NAVIGATION PROGRESSION (FROM LOCAL LOSS TO GLOBAL HJB)
        ===================================================================== */
     (function initLab07() {
       const cv = $("#neuro-map-cv");
@@ -563,7 +563,7 @@
           return { pts, out: "TIMEOUT", t: 112 };
         };
 
-        // 2. NeuroHJR As-Written (Eqs. 20-24): d(L_obs)/d(theta) == 0, L_goal = -<u, r_goal> => u = tanh(big * r_goal)
+        // 2. Uncoupled collocation penalty (d(L_obs)/d(theta) == 0, L_goal = -<u, r_goal> => u = tanh(big * r_goal))
         const rAsWritten = rollout((p) => {
           const dx = GOAL[0] - p[0], dy = GOAL[1] - p[1], n = Math.hypot(dx, dy) + 1e-9;
           return [Math.tanh(4 * dx / n), Math.tanh(4 * dy / n)];
@@ -677,11 +677,11 @@
 
         const tOpt = T[Math.round(START[0] / H) * N + Math.round(START[1] / H)];
         $("#neuro-readout").innerHTML =
-          `<div class="hud-headline"><span class="pill safe">EXACT HJB GRID SOLVE: ${solveMs.toFixed(1)} ms</span> <span>(32,761 nodes vs 10,000 PINN epochs!)</span></div>` +
+          `<div class="hud-headline"><span class="pill safe">EXACT EIKONAL HJB SOLVE: ${solveMs.toFixed(1)} ms</span> <span>(32,761 grid nodes, zero retraining per map)</span></div>` +
           `<div><span style="color:var(--safe)">■</span> <b>Exact Eikonal HJB (−∇T):</b> ${isFinite(tOpt) ? `${tOpt.toFixed(1)} s · ${pathLen(optPath).toFixed(1)} m` : "Blocked"} <span class="pill safe">GLOBAL OPTIMUM</span></div>` +
-          `<div><span style="color:var(--c-cbf)">■</span> <b>1-Step Lookahead Fix (ρ=${rho.toFixed(1)}m):</b> <span class="pill ${rLookahead.out === "GOAL" ? "accent" : "warn"}">${rLookahead.out}</span> ${pathLen(rLookahead.pts).toFixed(1)} m (myopic local deflection)</div>` +
-          `<div><span style="color:var(--c-apf)">■</span> <b>APF Baseline:</b> <span class="pill ${rApf.out === "GOAL" ? "accent" : "warn"}">${rApf.out}</span> ${pathLen(rApf.pts).toFixed(1)} m</div>` +
-          `<div><span style="color:var(--unsafe)">■</span> <b>NeuroHJR As-Written (Eq. 23):</b> <span class="pill unsafe">${rAsWritten.out}</span> at ${pathLen(rAsWritten.pts).toFixed(1)} m (∇_θ L_obs ≡ 0!)</div>`;
+          `<div><span style="color:var(--c-cbf)">■</span> <b>1-Step Lookahead Policy (ρ=${rho.toFixed(1)}m):</b> <span class="pill ${rLookahead.out === "GOAL" ? "accent" : "warn"}">${rLookahead.out}</span> ${pathLen(rLookahead.pts).toFixed(1)} m (local horizon)</div>` +
+          `<div><span style="color:var(--c-apf)">■</span> <b>Classical APF Baseline:</b> <span class="pill ${rApf.out === "GOAL" ? "accent" : "warn"}">${rApf.out}</span> ${pathLen(rApf.pts).toFixed(1)} m</div>` +
+          `<div><span style="color:var(--unsafe)">■</span> <b>Goal-Only / Uncoupled L_obs:</b> <span class="pill unsafe">${rAsWritten.out}</span> at ${pathLen(rAsWritten.pts).toFixed(1)} m (∇_θ L_obs = 0)</div>`;
       }
 
       HJR.bindDrag(cv, PM.evtPos, {
@@ -813,7 +813,7 @@
               : `<span class="pill unsafe">UNSAFE · ${activeViol} COUNTEREXAMPLES INSIDE {V_θ &gt; δ}</span>`
           }</div>` +
           `<div>Calibration (${info.n_cal.toLocaleString()} rollouts): found <b>${info.n_viol}</b> false-safe crashes → required shift <b>δ* = ${info.delta.toFixed(3)} m</b></div>` +
-          `<div>Grid audit at δ = ${delta.toFixed(3)} m: False-safe cells = <b>${((100 * fs) / tot).toFixed(2)}%</b> · Over-conservative cost = <b>${((100 * oc) / tot).toFixed(2)}%</b></div>` +
+          `<div>Grid comparison at δ = ${delta.toFixed(3)} m: False-safe cells = <b>${((100 * fs) / tot).toFixed(2)}%</b> · Over-conservative cost = <b>${((100 * oc) / tot).toFixed(2)}%</b></div>` +
           `<div class="muted">${
             certified
               ? `Clopper-Pearson guarantee (${Nval.toLocaleString()} fresh rollouts, 1−β = ${confPct}%): P(crash | V_θ(x) > δ) ≤ ${(100 * epsZero).toFixed(3)}%`
@@ -1022,7 +1022,7 @@
           opts: [
             ["Artificial Potential Field around the deck coaming", false, "APF repels you away from the pad you're trying to land on and has zero notion of vertical slam velocity or gust feasibility."],
             ["Offline 4D Reach-Avoid HJR LUT (x, z, vx, vz) + Go-Around Trigger", true, "Spot on! Relative to the pad, 4D Reach-Avoid fits in ~2 MB of RAM, evaluates in 2 µs, and gives the exact V_RA < 0 go-around boundary."],
-            ["Per-map steady-state PINN like NeuroHJR", false, "Steady-state HJB without stage cost collapses, and 4D fits easily on an exact verifiable grid without neural approximation error."],
+            ["Per-map steady-state PINN without stage cost", false, "Steady-state HJB without running cost collapses to constants, and 4D fits easily on an exact verifiable grid without neural approximation error."],
           ],
         },
         {

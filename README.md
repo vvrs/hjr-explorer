@@ -1,6 +1,6 @@
-# Hamilton-Jacobi Reachability & PINNs — Interactive Flight-Dynamics Lab
+# Hamilton-Jacobi Reachability & PINNs — Interactive Monograph
 
-An interactive first-principles monograph and simulation laboratory on **Hamilton-Jacobi Reachability (HJR)**, **Control Barrier Functions (CBFs / CBVFs)**, **Artificial Potential Fields (APFs)**, **Physics-Informed Neural Networks (DeepReach)**, a forensic mathematical audit of **NeuroHJR (`arXiv:2512.01897`)**, and **industrial drone autonomy patterns**.
+An interactive first-principles textbook chapter and simulation laboratory building **Hamilton-Jacobi Reachability (HJR)**, **Control Barrier Functions (CBFs / CBVFs)**, **Artificial Potential Fields (APFs)**, **Physics-Informed Neural Networks (DeepReach)**, **cluttered-environment neural HJB formulations**, and **industrial aerial autonomy patterns** from simple approaches up to modern certified methods.
 
 ## Zero-Server Local Usage (`file://` Ready)
 
@@ -16,7 +16,7 @@ python3 -m http.server 8080
 
 ## Reproducing All Numerical Solvers & PINN Experiments
 
-All precomputed 2D/3D/4D HJI-VI PDE tensors, Dubins Air3D reachable tubes, 4D Reach-Avoid precision dock landing funnels, FaSTrack tracking error bounds, SIREN PINNs, conformal verification runs, and NeuroHJR loss audits are generated from scratch by:
+All precomputed 2D/3D/4D HJI-VI PDE tensors, Dubins Air3D reachable tubes, 4D Reach-Avoid precision dock landing funnels, FaSTrack tracking error bounds, SIREN PINNs, conformal verification runs, and cluttered-map navigation benchmarks are generated from scratch by:
 
 ```bash
 python3 generate_data.py
@@ -35,6 +35,7 @@ This regenerates both `data.json` (inspectable raw metrics and quantized tensors
    - **FaSTrack Nonlinear Lagged Quadrotor Sandbox** (tracking error bound bubble around a fast geometric planner).
 5. **Safety Filter & Live Control-Space QP Inspector**: APF vs. HOCBF-QP vs. HJR-Switch vs. Smooth CBVF (HJR-CBF), visualizing live actuator disc $\|u\| \le a_{\max}$ half-space constraints and QP infeasibility.
 6. **Live 60fps In-Browser PINN Studio**: Train a real neural network with exact 2nd-order PDE residual backpropagation right in your browser (`SIREN sin` vs. `Tanh` vs. `ReLU`, temporal curriculum, hard boundary anchor vs. steady-state collapse).
-7. **Forensic Audit of `arXiv:2512.01897` (NeuroHJR)**: Interactive equation-by-equation proof and live $45\,\text{m} \times 45\,\text{m}$ comparison (`As-Written` vs. `1-Step Lookahead` vs. `True Eikonal/HJB`).
+7. **Cluttered Navigation Formulation Lab**: Step-by-step progression on a $45\,\text{m} \times 45\,\text{m}$ obstacle field comparing uncoupled collocation losses, $\rho$-triggered 1-step lookahead policies, classical APF, and exact Eikonal HJB wavefronts.
 8. **Conformal / Scenario Verification Explorer**: Interactive $\delta$-level calibration and Clopper-Pearson safety certificate calculator.
 9. **Industry Feasibility & Drone Architecture Calculator** + **5-Scenario Autonomy Engineering Diagnostic**.
+10. **In-Page Session BYOK Study Tutor**: Connect your own ephemeral session API key (Google Gemini, Anthropic Claude, OpenAI, or OpenRouter) right inside the page.

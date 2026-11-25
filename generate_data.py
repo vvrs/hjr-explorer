@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Numerical Solver & PINN Suite for HJR Masterclass (Companion & Critique for arXiv:2512.01897)
+Numerical Solver & PINN Suite for HJR Monograph (First Principles to Neural Reachability)
 Uses strictly monotone Osher-Sethian / Godunov upwind schemes (L_inf stable, zero artificial blowup):
   1. 2D Phase-Plane HJI-VI (1D Drone vs Wall + Bounded Pillar BRS vs BRT)
   2. 3D Fixed-Wing / Dubins Air3D HJI-VI (x, y, psi) Twisted Reachable Tube
@@ -8,7 +8,7 @@ Uses strictly monotone Osher-Sethian / Godunov upwind schemes (L_inf stable, zer
   4. 4D Precision Dock Landing Reach-Avoid HJI-VI (x, z, vx, vz)
   5. 3D FaSTrack Quadrotor-With-Pitch-Lag Tracking Error Bound (e_p, v, theta)
   6. DeepReach SIREN PINN vs Steady-State Collapse + Lin & Bansal Conformal Verification
-  7. Forensic Reproduction of NeuroHJR (arXiv:2512.01897) Losses & Rollouts
+  7. Cluttered 45m x 45m Multi-Obstacle Navigation Benchmarks
 
 Outputs both `data.json` and `data.js` (zero-CORS file:// compatible).
 """

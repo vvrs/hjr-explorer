@@ -22,7 +22,7 @@
       const cvPhase = $("#hero-phase-cv");
       if (!cvFlight || !cvPhase) return;
 
-      const PF = HJR.createPlot2D(cvFlight, { xlim: [-2, 12], ylim: [0, 3], margin: { l: 48, r: 16, t: 10, b: 26 } });
+      const PF = HJR.createPlot2D(cvFlight, { xlim: [-2, 12], ylim: [0, 3], margin: { l: 48, r: 16, t: 10, b: 36 } });
       const PP = HJR.createPlot2D(cvPhase, { xlim: [-2, 12], ylim: [-4, 8], margin: { l: 48, r: 16, t: 12, b: 38 } });
 
       const PWALL = 10.0;

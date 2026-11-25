@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Hamilton-Jacobi Reachability &amp; PINNs — From First Principles to Drone Production</title>
-  <meta name="description" content="An interactive flight-dynamics monograph teaching Hamilton-Jacobi Reachability (HJR) from first principles, 3D level sets, CBF/APF comparisons, live browser PINNs (DeepReach), a forensic audit of NeuroHJR (arXiv:2512.01897), and industrial drone production patterns." />
+  <title>Hamilton-Jacobi Reachability &amp; PINNs — From First Principles to Aerial Autonomy</title>
+  <meta name="description" content="An interactive textbook chapter building Hamilton-Jacobi Reachability (HJR) and Physics-Informed Neural Networks (PINNs) from first principles: 3D level sets, CBF/APF comparisons, live browser PINN training, neural planner formulation design, formal verification, and drone deployment." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&display=swap" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -17,20 +17,26 @@
 <header class="topbar">
   <div class="progress-track"><div class="progress-bar" id="reading-progress"></div></div>
   <div class="topbar-inner">
-    <a class="brand" href="#top"><span class="brand-dot"></span><span>HJR &amp; PINNs · Flight Lab</span></a>
+    <a class="brand" href="#top">
+      <span class="brand-main">Hamilton-Jacobi Reachability</span>
+      <span class="brand-sub">First Principles &amp; Neural Solvers</span>
+    </a>
     <nav class="toc-nav" aria-label="Chapters">
       <a href="#ch-question">1 Point of No Return</a>
-      <a href="#ch-levelset">2 3D Level Sets &amp; PDE</a>
-      <a href="#ch-models">3 Drone Models &amp; 3D Tube</a>
-      <a href="#ch-drones">4 Arena, Dock &amp; FaSTrack</a>
-      <a href="#ch-filters">5 HJR vs CBF vs APF</a>
-      <a href="#ch-pinns">6 Live PINN Studio</a>
-      <a href="#ch-paper">7 arXiv:2512.01897 Audit</a>
-      <a href="#ch-verify">8 Formal Verification</a>
-      <a href="#ch-production">9 Industry Playbook</a>
+      <a href="#ch-levelset">2 3D Level Sets</a>
+      <a href="#ch-models">3 Vehicle Models</a>
+      <a href="#ch-drones">4 Planning &amp; Control</a>
+      <a href="#ch-filters">5 APF · CBF · HJR</a>
+      <a href="#ch-pinns">6 PINN Solvers</a>
+      <a href="#ch-paper">7 Cluttered Navigation</a>
+      <a href="#ch-verify">8 Verification</a>
+      <a href="#ch-production">9 Production</a>
       <a href="#ch-quiz">10 Diagnostic</a>
     </nav>
-    <button class="theme-btn" id="theme-toggle" type="button">☀ Light mode</button>
+    <div class="header-actions">
+      <button class="theme-btn" id="theme-toggle" type="button">☾ Dark mode</button>
+      <button class="tutor-open-btn" id="tutor-open" type="button">✦ Ask Tutor</button>
+    </div>
   </div>
 </header>
 
@@ -41,32 +47,32 @@
        ===================================================================== -->
   <section class="hero" id="ch-question">
     <div class="hero-copy">
-      <div class="eyebrow"><span class="chap-num">First Principles</span> Companion &amp; Forensic Guide to arXiv:2512.01897</div>
+      <div class="eyebrow"><span class="chap-num">Interactive Monograph</span> Safe Autonomy from First Principles</div>
       <h1>Hamilton-Jacobi Reachability, <span class="hero-title-accent">Engineered &amp; Learned</span></h1>
       <p class="lede">
-        Collision checks ask <strong>where your drone is right now</strong>. Hamilton-Jacobi Reachability (HJR) asks the only question physics actually cares about:
-        <strong>from which states is a crash already inevitable</strong>—even if your motors command maximum tilt-braking this instant while the worst admissible wind gust pushes your tail?
+        Simple geometric collision checks ask <strong>where a robot is right now</strong>. Hamilton-Jacobi Reachability (HJR) asks the question dynamics actually demand:
+        <strong>from which states is a collision already unavoidable</strong>—even if the vehicle applies its best admissible control this instant against the worst bounded wind gust?
       </p>
       <p>
-        Built from dynamic programming up to 6D–10D neural solvers, this interactive flight lab lets you orbit <strong>3D level-set surfaces</strong>, slice <strong>fixed-wing &amp; multirotor reachable tubes</strong>, test <strong>HJR against CBFs and APFs</strong> inside live quadratic programs, <strong>train a real Physics-Informed Neural Network at 60 fps in your browser</strong>, forensically audit <em>NeuroHJR</em> (<a href="https://arxiv.org/abs/2512.01897" target="_blank" rel="noopener">arXiv:2512.01897</a>), and size HJR architectures for real production drone stacks.
+        Starting from elementary kinematics and reactive baselines, we build step by step through <strong>dynamic programming and 3D level-set surfaces</strong>, <strong>multirotor and fixed-wing reachable tubes</strong>, <strong>Control Barrier Functions and potential fields</strong>, <strong>live Physics-Informed Neural Networks (PINNs)</strong> for cluttered and high-dimensional spaces, statistical verification, and real-world aerial autonomy stacks.
       </p>
 
       <div class="roadmap-grid">
         <div class="roadmap-item">
-          <span class="kicker">01 · Geometric Core</span>
-          <p>Why lifting obstacles into a 3D value surface \(V(x,\tau)\) solves split/merge topology, kinks, and worst-case games.</p>
+          <span class="kicker">01 · Foundations</span>
+          <p>Lift failure sets into 3D value surfaces \(V(x,\tau)\) to handle split/merge geometry, kinks, and adversarial games.</p>
         </div>
         <div class="roadmap-item">
-          <span class="kicker">02 · Drone Control</span>
-          <p>How HJR powers safety filters, precision dock go-around envelopes, and FaSTrack tracking-error bubbles.</p>
+          <span class="kicker">02 · Classical to Optimal</span>
+          <p>Progress from holonomic paths and potential fields up to CBF-QPs, Reach-Avoid landing funnels, and FaSTrack.</p>
         </div>
         <div class="roadmap-item">
-          <span class="kicker">03 · PINNs &amp; NeuroHJR</span>
-          <p>Why grids explode past 5D, how DeepReach trains PINNs, and why <code>arXiv:2512.01897</code> collapses mathematically.</p>
+          <span class="kicker">03 · Neural PDE Solvers</span>
+          <p>Understand why grids struggle past 5D, train a live PINN in your browser, and formulate well-posed neural HJB losses.</p>
         </div>
         <div class="roadmap-item">
-          <span class="kicker">04 · Shipping in Industry</span>
-          <p>Exactly when to use 1D closed forms, 4D lookup tables, CBF-QPs, FaSTrack, or conformally verified PINNs.</p>
+          <span class="kicker">04 · Production Autonomy</span>
+          <p>Certify learned value functions statistically and choose between closed forms, 4D lookup tables, and verified PINNs.</p>
         </div>
       </div>
     </div>
@@ -177,10 +183,10 @@
         <div class="math-card">
           <span class="math-label">Hamilton-Jacobi-Isaacs Variational Inequality</span>
           \[
-            \min\!\Big\{\, l(x) - V(x,\tau),\;\; H\big(x, \nabla_x V(x,\tau)\big) - \frac{\partial V}{\partial \tau} \,\Big\} = 0, \qquad V(x,0) = l(x)
+            \min\!\Big\{\, l(x) - V(x,\tau),\;\; H\big(x, \nabla_x V\big) - \frac{\partial V}{\partial \tau} \,\Big\} = 0
           \]
           \[
-            \text{where}\quad H(x, \lambda) = \max_{u \in \mathcal{U}} \min_{d \in \mathcal{D}} \; \lambda^\top f(x, u, d).
+            V(x,0) = l(x), \qquad H(x, \lambda) = \max_{u \in \mathcal{U}} \min_{d \in \mathcal{D}} \; \lambda^\top f(x, u, d)
           \]
         </div>
         <div class="callout warn">
@@ -259,7 +265,7 @@
         <span class="tag">Model A · Velocity-Controlled Point (\(\dot{\mathbf{p}} = \mathbf{u}\))</span>
         <h4>BRT = Obstacle (0 m expansion)</h4>
         <p class="small">
-          Commanding velocity directly (\(|u_i| \le 1\), no wind)—the exact model used in <em>NeuroHJR</em>—gives \(H(x, \nabla V) = \|\nabla V\|_1 \ge 0\). Plugging \(V(x,\tau) \equiv l(x)\) satisfies \(\min\{l - V, H - \partial_\tau V\} = \min\{0, \|\nabla l\|_1\} = 0\) identically! <strong>Safety reachability adds zero information beyond a raw distance check.</strong>
+          Commanding velocity directly (\(|u_i| \le 1\), no wind) gives \(H(x, \nabla V) = \|\nabla V\|_1 \ge 0\). Plugging \(V(x,\tau) \equiv l(x)\) satisfies \(\min\{l - V, H - \partial_\tau V\} = \min\{0, \|\nabla l\|_1\} = 0\) identically. <strong>Without momentum or disturbances, the backward reachable tube is simply the obstacle itself.</strong>
         </p>
       </div>
       <div class="card highlight">
@@ -582,92 +588,92 @@
   </section>
 
   <!-- =====================================================================
-       CHAPTER 7: FORENSIC AUDIT OF ARXIV:2512.01897 (NEUROHJR)
+       CHAPTER 7: BUILDING UP NEURAL NAVIGATION IN CLUTTERED ENVIRONMENTS
        ===================================================================== -->
   <section class="chapter" id="ch-paper">
     <div class="chap-header">
-      <div class="eyebrow"><span class="chap-num">Chapter 07</span> Forensic Paper Dissection · arXiv:2512.01897</div>
-      <h2>Reading <em>NeuroHJR</em> Critically: Six Mathematical Flaws &amp; How to Repair Them</h2>
+      <div class="eyebrow"><span class="chap-num">Chapter 07</span> From Simple Approaches to Well-Posed Neural HJB</div>
+      <h2>Designing PINNs for Cluttered Obstacle Navigation: Step-by-Step Formulation</h2>
       <p class="chap-sub">
-        Halder, Majumder, Rakshith, Shah &amp; Sundaram (<em>NeuroHJR</em>, Dec 2025) propose a \(3\times 128\) \(\tanh\) network \((P_x, P_y) \mapsto (u_x, u_y, V)\) for a 2D velocity-controlled UGV (\(\dot{\mathbf{x}} = \mathbf{u},\; |u_i| \le 1\)) crossing a \(45\text{ m} \times 45\text{ m}\) field with 10 obstacles (\(R=2\text{ m},\; \delta=1\text{ m} \implies R_d=3\text{ m}\)). With the first-principles tools from Chapters 2–6, we can audit every equation directly.
+        Suppose we want a neural network \((P_x, P_y) \mapsto (u_x, u_y, V)\) to guide a vehicle across a \(45\text{ m} \times 45\text{ m}\) cluttered field past ten cylindrical obstacles (\(R=2\text{ m}\) plus a \(\delta=1\text{ m}\) safety buffer, \(R_d=3\text{ m}\)), switching from nominal goal-seeking to learned avoidance within sensor range \(\rho\) (Halder et al., 2025). Building this up from first principles reveals why each mathematical ingredient of the PDE and loss function is essential.
       </p>
     </div>
 
     <div class="card-grid">
-      <div class="card danger-card">
-        <span class="tag">Flaw 1 · Eq. (14) Dynamics</span>
-        <h4>Trivial Reachable Set (\(\mathcal{B} \equiv \mathcal{F}\))</h4>
+      <div class="card highlight">
+        <span class="tag">Step 1 · Choosing the Dynamics</span>
+        <h4>Kinematic Routing vs. Dynamic Safety</h4>
         <p class="small">
-          Because \(\dot{\mathbf{x}} = \mathbf{u}\) has zero inertia and zero disturbance, the vehicle stops in \(0.0\text{ m}\). True safety HJR expands the \(3\text{ m}\) obstacle discs by <strong>0.00 m</strong>. What the vehicle actually needs is <em>shortest-path routing</em> (static Eikonal HJB), not safety reachability.
+          Starting with a first-order velocity model \(\dot{\mathbf{x}} = \mathbf{u}\) (\(|u_i| \le 1\)) isolates pure geometric routing, since stopping distance is zero (\(\mathcal{B} = \mathcal{F}\)). To capture momentum, tilt limits, or wind shadows, we promote the state to position–velocity \((p, v)\) as in Chapters 4–6.
         </p>
       </div>
       <div class="card danger-card">
-        <span class="tag">Flaw 2 · Eqs. (18) &amp; (21) PDE</span>
-        <h4>Missing Stage Cost \(\implies \nabla V \equiv \mathbf{0}\)</h4>
+        <span class="tag">Step 2 · Steady-State HJB Needs Stage Cost</span>
+        <h4>Why \(+1\) Separates Wavefronts from Constants</h4>
         <p class="small">
-          Minimum-time HJB requires stage cost \(+1\): \(1 + \min_{\mathbf{u}} \nabla V\cdot\mathbf{u} = 1 - \|\nabla V\|_1 = 0\). Dropping \(+1\) in Eq. (18) yields \(-\|\nabla V\|_1 = 0 \implies V = \text{const}\)! Worse, Eq. (21) minimizes \((\nabla V_\theta \cdot \mathbf{u}_\theta)^2\), satisfied trivially when \(\nabla V_\theta = \mathbf{0}\) or \(\mathbf{u}_\theta \perp \nabla V_\theta\).
+          In a static map, setting \(\partial_t V = 0\) directly in \(\min_{\mathbf{u}} \nabla V\cdot\mathbf{u} = 0\) yields \(-\|\nabla V\|_1 = 0\), whose solution is a flat constant (\(\nabla V \equiv \mathbf{0}\)). Adding unit running time cost \(+1\) gives the <strong>Eikonal HJB equation</strong> \(1 + \min_{\mathbf{u}} \nabla T\cdot\mathbf{u} = 0 \iff \|\nabla T\|_1 = 1\), whose level sets form exact shortest-time wavefronts.
         </p>
       </div>
       <div class="card danger-card">
-        <span class="tag">Flaw 3 · Eq. (23) Obstacle Loss</span>
-        <h4>Identically Zero Parameter Gradient!</h4>
+        <span class="tag">Step 3 · Differentiable Obstacle Coupling</span>
+        <h4>Linking Obstacle Penalties to \(\theta\)</h4>
         <p class="small">
-          Eq. (23) writes \(\mathcal{L}_{\text{obstacle}} = \frac{1}{N}\sum (\max(0, R_d - d_i))^2\) where \(d_i = \|\mathbf{P}^{(i)} - \mathbf{p}_o\|\) depends only on fixed collocation coordinates \(\mathbf{P}^{(i)}\), <em>not</em> on network outputs \((u_\theta, V_\theta)\)! Thus \(\nabla_\theta \mathcal{L}_{\text{obstacle}} \equiv \mathbf{0}\) (and on safe-region points \(d_i > R_d\), even the value is zero!).
+          Evaluating an obstacle hinge \(\max(0, R_d - \|\mathbf{P}^{(i)} - \mathbf{p}_o\|)^2\) solely at fixed collocation coordinates \(\mathbf{P}^{(i)}\) produces \(\nabla_\theta \mathcal{L}_{\text{obs}} \equiv \mathbf{0}\), leaving only goal alignment active. Evaluating at a lookahead step \(\mathbf{P}^{(i)} + \Delta t\,\mathbf{u}_\theta\) restores gradients as a local 1-step repulsion, while boundary conditions on \(V_\theta\) encode global geometry.
         </p>
       </div>
       <div class="card danger-card">
-        <span class="tag">Flaw 4 · Eqs. (5), (8), (9) Value</span>
-        <h4>Unsigned Distances &amp; Missing Obstacles</h4>
+        <span class="tag">Step 4 · Signed Obstacle Level Sets</span>
+        <h4>Encoding Obstacles Inside \(l(x)\)</h4>
         <p class="small">
-          \(V_F(x,0) = \min_{y\in\mathcal{S}_0}\|x-y\| \ge 0\) and \(V_B(x,T) = \min_{y\in\mathcal{T}}\|x-y\| \ge 0\) never reference obstacles at all, and \(V = \max\{V_F, -V_B\} \ge V_F \ge 0\) everywhere—making the paper's safety condition "\(V(x,t) \ge 0\)" tautologically true at every point, including inside obstacles!
+          Unsigned distances to start or goal (\(V_F, V_B \ge 0\)) remain non-negative everywhere, even inside obstacles. True reach-avoid value functions anchor signed distance \(l_{\text{obs}}(x) = \min_o \|x - p_o\| - R_d &lt; 0\) on obstacle interiors and \(l_{\text{goal}}(x) \le 0\) on the target.
         </p>
       </div>
       <div class="card highlight">
-        <span class="tag">Flaw 5 · Map Overfitting vs. Speed</span>
-        <h4>10,000 Epochs per Map vs. 5 ms Dijkstra</h4>
+        <span class="tag">Step 5 · When Grids Win vs. When PINNs Win</span>
+        <h4>Low-D Fast Marching vs. Parameterized PINNs</h4>
         <p class="small">
-          Obstacles are hardcoded into the loss rather than passed to the network: moving one cylinder requires retraining from scratch. Meanwhile, solving the <em>exact</em> 2D Eikonal HJB equation on a \(181\times 181\) grid takes <strong>~5 milliseconds</strong> right in your browser below!
+          When obstacle positions are baked into the loss, moving one cylinder requires retraining, whereas 2D Dijkstra / Fast Marching solves 32,761 nodes in ~10 ms. PINNs shine when conditioned on relative obstacle/wind inputs in <strong>6D–10D</strong> spaces where grids cannot fit in memory.
         </p>
       </div>
       <div class="card safe-card">
-        <span class="tag">How to Repair It Properly</span>
-        <h4>From NeuroHJR to Verified DeepReach</h4>
+        <span class="tag">Step 6 · The Complete Synthesis</span>
+        <h4>Well-Posed Neural Reach-Avoid</h4>
         <p class="small">
-          (1) Model real 4D–10D inertia/turn/gust dynamics; (2) enforce time-dependent HJI-VI (or \(1 - \|\nabla T\| = 0\) for time-to-goal); (3) condition \(V_\theta(x, \tau; o_1,\dots,o_k)\) on relative obstacle features or local ESDF; (4) certify \(\{V_\theta > \delta\}\) via conformal rollout bounds.
+          Combine (1) inertia/wind dynamics, (2) time-dependent HJI-VI or stage-cost Eikonal HJB, (3) hard boundary parametrization \(V_\theta(x,0)=l(x)\), (4) obstacle/parameter conditioning, and (5) conformal \(\delta\)-verification (Chapter 8).
         </p>
       </div>
     </div>
 
-    <!-- LAB 7: NEUROHJR FORENSIC ARENA -->
+    <!-- LAB 7: CLUTTERED NAVIGATION PROGRESSION -->
     <div class="lab">
       <div class="lab-bar">
         <div class="lab-title-group">
           <span class="lab-badge">Lab 07</span>
-          <span class="lab-title">The Paper's \(45\text{ m} \times 45\text{ m}\) Field — As-Written vs. Repaired HJB Solver</span>
+          <span class="lab-title">Cluttered \(45\text{ m} \times 45\text{ m}\) Field — From Local Heuristics to Global Eikonal HJB</span>
         </div>
         <div class="seg-tabs" id="neuro-map-tabs">
-          <button type="button" class="active" data-nmap="paper">Paper Cluttered Map (10 Cylinders)</button>
+          <button type="button" class="active" data-nmap="paper">10-Cylinder Cluttered Field</button>
           <button type="button" data-nmap="utrap">Concave U-Trap</button>
           <button type="button" data-nmap="shuffle">Shuffle Random 10</button>
         </div>
       </div>
       <div class="lab-body split">
         <div class="canvas-box">
-          <canvas id="neuro-map-cv" width="620" height="540" aria-label="45m by 45m obstacle field comparing NeuroHJR as-written, 1-step lookahead fix, APF, and exact Eikonal HJB"></canvas>
+          <canvas id="neuro-map-cv" width="620" height="540" aria-label="45m by 45m obstacle field comparing uncoupled loss, 1-step lookahead policy, APF, and exact Eikonal HJB"></canvas>
         </div>
         <div class="controls-col">
           <div class="predict-box">
-            <strong>Interactive Audit:</strong> Drag any red cylinder! Every frame, your browser solves the <strong>exact static HJB Eikonal PDE (\(\|\nabla T\| = 1\))</strong> across 32,761 grid nodes in milliseconds, and rolls out (1) <em>NeuroHJR As-Written</em> (\(\nabla_\theta \mathcal{L}_{\text{obs}}=0\)), (2) <em>Generous 1-Step Lookahead Fix</em> (\(\mathbf{p} + \Delta t\,\mathbf{u}_\theta\)), (3) <em>APF</em>, and (4) <em>Exact \(-\nabla T\) Optimal HJB</em>.
+            <strong>Build it up interactively:</strong> Drag any obstacle cylinder or adjust the sensor trigger radius \(\rho\). Compare (1) an <em>uncoupled collocation loss</em> (\(\nabla_\theta \mathcal{L}_{\text{obs}}=0\)), (2) a <em>\(\rho\)-triggered 1-step lookahead policy</em> (\(\mathbf{p} + \Delta t\,\mathbf{u}_\theta\)), (3) a <em>classical APF</em>, and (4) the <em>exact static HJB Eikonal wavefront</em> (\(\|\nabla T\|=1\), solved live across 32,761 nodes).
           </div>
           <div class="ctl">
-            <label for="neuro-rho"><span>UGV Sensor Trigger Radius \(\rho\) (Paper Table 3)</span><b id="neuro-rho-v">5.0 m</b></label>
+            <label for="neuro-rho"><span>Local Avoidance Sensor Radius \(\rho\)</span><b id="neuro-rho-v">5.0 m</b></label>
             <input id="neuro-rho" type="range" min="3.1" max="9.0" step="0.2" value="5.0" />
           </div>
           <div class="legend">
             <span><i style="background:var(--safe)"></i>Exact Eikonal HJB (\(-\nabla T\))</span>
-            <span><i style="background:var(--c-apf)"></i>APF Baseline</span>
-            <span><i style="background:var(--c-cbf)"></i>1-Step Lookahead Fix</span>
-            <span><i style="background:var(--unsafe)"></i>NeuroHJR As-Written (crashes!)</span>
+            <span><i style="background:var(--c-apf)"></i>Classical APF</span>
+            <span><i style="background:var(--c-cbf)"></i>1-Step Lookahead (\(\rho\)-triggered)</span>
+            <span><i style="background:var(--unsafe)"></i>Goal-Only / Uncoupled \(\mathcal{L}_{\text{obs}}\)</span>
           </div>
           <div class="hud-readout" id="neuro-readout"></div>
         </div>
@@ -836,15 +842,58 @@
 
   <footer>
     <p>
-      <strong>Primary References:</strong>
-      Mitchell, Bayen &amp; Tomlin (<em>IEEE TAC</em> 2005) · Bansal, Chen, Herbert &amp; Tomlin (<em>CDC</em> 2017) · Herbert et al., <em>FaSTrack</em> (<em>CDC</em> 2017 / <em>TAC</em> 2021) · Choi et al., <em>CBVF</em> (<em>CDC</em> 2021) · Bansal &amp; Tomlin, <em>DeepReach</em> (<em>ICRA</em> 2021) · Lin &amp; Bansal, <em>Conformal Verification</em> (<em>ICRA</em> 2023 / 2024) · Halder et al., <em>NeuroHJR</em> (<a href="https://arxiv.org/abs/2512.01897" target="_blank" rel="noopener">arXiv:2512.01897</a>, 2025) · ASTM F3269-21 Run-Time Assurance.
+      <strong>References &amp; Further Reading:</strong>
+      Mitchell, Bayen &amp; Tomlin (<em>IEEE TAC</em> 2005) · Bansal, Chen, Herbert &amp; Tomlin (<em>CDC</em> 2017) · Herbert et al., <em>FaSTrack</em> (<em>CDC</em> 2017 / <em>TAC</em> 2021) · Choi et al., <em>CBVF</em> (<em>CDC</em> 2021) · Bansal &amp; Tomlin, <em>DeepReach</em> (<em>ICRA</em> 2021) · Lin &amp; Bansal, <em>Conformal Verification</em> (<em>ICRA</em> 2023 / 2024) · Halder et al. (<a href="https://arxiv.org/abs/2512.01897" target="_blank" rel="noopener">arXiv:2512.01897</a>, 2025) · ASTM F3269-21 Run-Time Assurance.
     </p>
     <p style="margin-top:0.4rem">
-      All PDE tensors, 3D Dubins tubes, 4D Reach-Avoid funnels, FaSTrack bounds, and SIREN PINNs in this lab are reproducible via <code>python3 generate_data.py</code>. Fully functional offline &amp; via direct <code>file://</code> open.
+      All PDE tensors, 3D Dubins tubes, 4D Reach-Avoid funnels, FaSTrack bounds, and SIREN PINNs in this monograph are reproducible via <code>python3 generate_data.py</code>. Ready for static GitHub Pages &amp; offline <code>file://</code> use.
     </p>
   </footer>
 
 </main>
+
+<!-- =====================================================================
+     SLIDE-OVER SESSION BYOK AI STUDY TUTOR
+     ===================================================================== -->
+<div class="tutor-backdrop" id="tutor-backdrop"></div>
+<aside class="tutor-drawer" id="tutor-drawer" aria-label="Interactive AI Study Tutor">
+  <div class="tutor-head">
+    <h3>✦ Study Tutor (Bring Your Own Key)</h3>
+    <button class="btn" id="tutor-close" type="button">✕ Close</button>
+  </div>
+  <div class="tutor-config">
+    <div class="tutor-row">
+      <select id="tutor-provider" aria-label="LLM Provider">
+        <option value="gemini">Google Gemini</option>
+        <option value="anthropic">Anthropic Claude</option>
+        <option value="openai">OpenAI ChatGPT</option>
+        <option value="openrouter">OpenRouter (Any)</option>
+      </select>
+      <select id="tutor-model" aria-label="Model"></select>
+    </div>
+    <div style="display:flex;gap:0.4rem">
+      <input id="tutor-key" type="password" autocomplete="off" spellcheck="false" placeholder="Session API key..." aria-label="Session API Key" />
+      <button class="btn" id="tutor-clear-key" type="button" title="Wipe key from session">Clear</button>
+    </div>
+    <div class="tutor-privacy">
+      <strong>Session-only privacy:</strong> Your key stays in this browser tab's memory (`sessionStorage`), is wiped when the tab closes, and connects directly from your browser to the selected provider over HTTPS.
+    </div>
+  </div>
+  <div class="tutor-messages" id="tutor-messages">
+    <div class="tutor-msg assistant">
+      Ask anything about Hamilton-Jacobi Reachability, viscosity solutions, CBFs vs. CBVFs, PINNs, or drone deployment! I automatically see which section and simulator readout you are viewing.
+    </div>
+  </div>
+  <div class="tutor-prompts">
+    <button class="tutor-chip" type="button" data-q="Explain intuitively why BRS and BRT differ on the fly-through pillar example.">BRS vs. BRT intuition</button>
+    <button class="tutor-chip" type="button" data-q="Why does a standard HOCBF QP become infeasible under actuator saturation while CBVF stays feasible?">Why HOCBF goes infeasible</button>
+    <button class="tutor-chip" type="button" data-q="Why do PINNs need time-dependent curriculum or +1 stage cost instead of ∂V/∂t = 0?">Steady-state PINN pitfall</button>
+  </div>
+  <div class="tutor-input-bar">
+    <textarea id="tutor-input" rows="2" placeholder="Ask about an equation, simulator, or drone use case…"></textarea>
+    <button class="btn primary" id="tutor-send" type="button">Send</button>
+  </div>
+</aside>
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -852,5 +901,6 @@
 <script defer src="core.js"></script>
 <script defer src="labs-hjr.js"></script>
 <script defer src="labs-pinn.js"></script>
+<script defer src="tutor.js"></script>
 </body>
 </html>
