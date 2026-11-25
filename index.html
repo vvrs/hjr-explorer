@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hamilton-Jacobi Reachability &amp; PINNs — From First Principles to Drone Production</title>
+  <meta name="description" content="An interactive flight-dynamics monograph teaching Hamilton-Jacobi Reachability (HJR) from first principles, 3D level sets, CBF/APF comparisons, live browser PINNs (DeepReach), a forensic audit of NeuroHJR (arXiv:2512.01897), and industrial drone production patterns." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="progress-track"><div class="progress-bar" id="reading-progress"></div></div>
+  <div class="topbar-inner">
+    <a class="brand" href="#top"><span class="brand-dot"></span><span>HJR &amp; PINNs · Flight Lab</span></a>
+    <nav class="toc-nav" aria-label="Chapters">
+      <a href="#ch-question">1 Point of No Return</a>
+      <a href="#ch-levelset">2 3D Level Sets &amp; PDE</a>
+      <a href="#ch-models">3 Drone Models &amp; 3D Tube</a>
+      <a href="#ch-drones">4 Arena, Dock &amp; FaSTrack</a>
+      <a href="#ch-filters">5 HJR vs CBF vs APF</a>
+      <a href="#ch-pinns">6 Live PINN Studio</a>
+      <a href="#ch-paper">7 arXiv:2512.01897 Audit</a>
+      <a href="#ch-verify">8 Formal Verification</a>
+      <a href="#ch-production">9 Industry Playbook</a>
+      <a href="#ch-quiz">10 Diagnostic</a>
+    </nav>
+    <button class="theme-btn" id="theme-toggle" type="button">☀ Light mode</button>
+  </div>
+</header>
+
+<main class="container" id="top">
+
+  <!-- =====================================================================
+       HERO + LAB 1: SYNCHRONIZED QUADROTOR + PHASE-SPACE POINT OF NO RETURN
+       ===================================================================== -->
+  <section class="hero" id="ch-question">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="chap-num">First Principles</span> Companion &amp; Forensic Guide to arXiv:2512.01897</div>
+      <h1>Hamilton-Jacobi Reachability, <span class="hero-title-accent">Engineered &amp; Learned</span></h1>
+      <p class="lede">
+        Collision checks ask <strong>where your drone is right now</strong>. Hamilton-Jacobi Reachability (HJR) asks the only question physics actually cares about:
+        <strong>from which states is a crash already inevitable</strong>—even if your motors command maximum tilt-braking this instant while the worst admissible wind gust pushes your tail?
+      </p>
+      <p>
+        Built from dynamic programming up to 6D–10D neural solvers, this interactive flight lab lets you orbit <strong>3D level-set surfaces</strong>, slice <strong>fixed-wing &amp; multirotor reachable tubes</strong>, test <strong>HJR against CBFs and APFs</strong> inside live quadratic programs, <strong>train a real Physics-Informed Neural Network at 60 fps in your browser</strong>, forensically audit <em>NeuroHJR</em> (<a href="https://arxiv.org/abs/2512.01897" target="_blank" rel="noopener">arXiv:2512.01897</a>), and size HJR architectures for real production drone stacks.
+      </p>
+
+      <div class="roadmap-grid">
+        <div class="roadmap-item">
+          <span class="kicker">01 · Geometric Core</span>
+          <p>Why lifting obstacles into a 3D value surface \(V(x,\tau)\) solves split/merge topology, kinks, and worst-case games.</p>
+        </div>
+        <div class="roadmap-item">
+          <span class="kicker">02 · Drone Control</span>
+          <p>How HJR powers safety filters, precision dock go-around envelopes, and FaSTrack tracking-error bubbles.</p>
+        </div>
+        <div class="roadmap-item">
+          <span class="kicker">03 · PINNs &amp; NeuroHJR</span>
+          <p>Why grids explode past 5D, how DeepReach trains PINNs, and why <code>arXiv:2512.01897</code> collapses mathematically.</p>
+        </div>
+        <div class="roadmap-item">
+          <span class="kicker">04 · Shipping in Industry</span>
+          <p>Exactly when to use 1D closed forms, 4D lookup tables, CBF-QPs, FaSTrack, or conformally verified PINNs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAB 1 -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 01</span>
+          <span class="lab-title">The Point of No Return — Physical Quadrotor ↔ Phase Space</span>
+        </div>
+        <span class="lab-hint">Drag drone or phase dot · tune brakes, gusts &amp; latency</span>
+      </div>
+      <div class="lab-body">
+        <div class="predict-box">
+          <strong>Predict first:</strong> Your quadrotor is <strong>4.0 m</strong> from a wall, closing at <strong>5.0 m/s</strong>. Max tilt gives \(a_{\max}=3.0\text{ m/s}^2\), tailwind gust is \(d_{\max}=0.5\text{ m/s}^2\), and perception-to-motor latency is \(\Delta t_{\text{lat}}=120\text{ ms}\). Can maximum emergency braking still save the aircraft?
+        </div>
+        <div class="canvas-box">
+          <canvas id="hero-flight-cv" width="700" height="155" aria-label="Physical side-view of quadrotor approaching wall with emergency braking ghost trajectory"></canvas>
+        </div>
+        <div class="canvas-box">
+          <canvas id="hero-phase-cv" width="700" height="330" aria-label="2D phase plane (position p, velocity v) showing Backward Reachable Tube"></canvas>
+        </div>
+        <div class="legend">
+          <span><i class="swatch" style="background:var(--unsafe)"></i>BRT: crash inevitable (\(V &lt; 0\))</span>
+          <span><i style="background:var(--ink)"></i>Grid DP \(V=0\) boundary</span>
+          <span><i style="background:var(--c-gold)"></i>Analytic boundary (with latency)</span>
+          <span><i style="background:var(--accent)"></i>Emergency braking rollout</span>
+        </div>
+        <div class="ctl-grid">
+          <div class="ctl">
+            <label for="h-amax"><span>Max brake \(a_{\max}\)</span><b id="h-amax-v">3.0 m/s²</b></label>
+            <input id="h-amax" type="range" min="1.2" max="5.0" step="0.1" value="3.0" />
+          </div>
+          <div class="ctl">
+            <label for="h-dmax"><span>Tailwind gust \(d_{\max}\)</span><b id="h-dmax-v">0.50 m/s²</b></label>
+            <input id="h-dmax" type="range" min="0.0" max="2.0" step="0.05" value="0.50" />
+          </div>
+          <div class="ctl">
+            <label for="h-lat"><span>Pipeline latency \(\Delta t_{\text{lat}}\)</span><b id="h-lat-v">120 ms</b></label>
+            <input id="h-lat" type="range" min="0" max="300" step="10" value="120" />
+          </div>
+          <div class="ctl">
+            <label for="h-tau"><span>Lookahead horizon \(\tau\)</span><b id="h-tau-v">4.0 s</b></label>
+            <input id="h-tau" type="range" min="0" max="4.0" step="0.04" value="4.0" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="h-launch-test" type="button">▶ Animate Emergency Stop</button>
+          <button class="btn" id="h-play-tau" type="button">Grow Horizon \(\tau: 0 \to 4\text{s}\)</button>
+          <label class="chk"><input id="h-show-exact" type="checkbox" checked />Show closed-form + latency curve</label>
+        </div>
+        <div class="hud-readout" id="h-readout" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 2: FIRST PRINCIPLES — 3D LEVEL SETS, DP -> PDE, BRS vs BRT
+       ===================================================================== -->
+  <section class="chapter" id="ch-levelset">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 02</span> First Principles &amp; Geometry</div>
+      <h2>Lifting Shapes into Surfaces: From 1 Line of DP to the HJI Variational Inequality</h2>
+      <p class="chap-sub">
+        Tracking the boundary of an unsafe set directly is a geometric nightmare: boundaries stretch, collide, pinch off, and develop sharp corners. Osher, Sethian, Mitchell, Bayen, and Tomlin solved this with one profound trick: <strong>represent every set as the waterline of a higher-dimensional surface</strong>.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="prose-stack">
+        <h3>Step 1 · Encode Failure as a Signed Margin Surface \(l(x)\)</h3>
+        <p>
+          Pick a continuous function \(l : \mathbb{R}^n \to \mathbb{R}\) whose sign tells you whether state \(x\) is safe right now:
+          \[
+            \mathcal{F} = \{ x \in \mathbb{R}^n : l(x) < 0 \} \quad \text{(failure set)}.
+          \]
+          For a wall at \(p_{\text{wall}}=10\text{ m}\), \(l(p,v) = 10 - p\) is literally distance-to-wall in meters.
+        </p>
+
+        <h3>Step 2 · Play a Zero-Sum Differential Game Over Horizon \(\tau\)</h3>
+        <p>
+          Along a trajectory \(\xi_{x}^{u,d}(s)\) starting at \(x\) under control \(u(\cdot) \in \mathcal{U}\) and disturbance \(d(\cdot) \in \mathcal{D}\), the <em>closest approach to failure</em> over \([0, \tau]\) is \(\min_{s\in[0,\tau]} l(\xi_x^{u,d}(s))\). Control maximizes this worst-case clearance; wind/intruder minimizes it:
+        </p>
+        <div class="math-card">
+          <span class="math-label">The HJR Value Function (Worst-Case Minimum Margin)</span>
+          \[
+            V(x, \tau) \;=\; \max_{u(\cdot) \in \mathcal{U}} \; \min_{d(\cdot) \in \mathcal{D}} \; \min_{s \in [0, \tau]} \; l\!\left(\xi_x^{u,d}(s)\right)
+          \]
+          <div class="eq-annot">
+            <span class="eq-chip">\(\min_s l\): closest approach on \([0,\tau]\)</span>
+            <span class="eq-chip">\(\min_d\): adversarial wind/intruder</span>
+            <span class="eq-chip">\(\max_u\): optimal evasive control</span>
+            <span class="eq-chip">\(V(x,\tau) &lt; 0 \iff x \in \text{BRT}(\tau)\)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="prose-stack">
+        <h3>Step 3 · Dynamic Programming + Taylor Limit = HJI PDE</h3>
+        <p>
+          Split \([0, \tau + \delta]\) into "right now" (\(s=0\)) versus "after a tiny step \(\delta\)":
+          \[
+            V(x, \tau + \delta) = \min\!\Big\{\, l(x),\; \max_{u\in\mathcal{U}} \min_{d\in\mathcal{D}} V\big(x + \delta f(x,u,d),\, \tau\big) \Big\}.
+          \]
+          Substitute \(V(x + \delta f, \tau) \approx V(x,\tau) + \delta\,\nabla_x V \cdot f(x,u,d)\), divide by \(\delta \to 0\), and you obtain the <strong>Hamilton-Jacobi-Isaacs Variational Inequality (HJI-VI)</strong>:
+        </p>
+        <div class="math-card">
+          <span class="math-label">Hamilton-Jacobi-Isaacs Variational Inequality</span>
+          \[
+            \min\!\Big\{\, l(x) - V(x,\tau),\;\; H\big(x, \nabla_x V(x,\tau)\big) - \frac{\partial V}{\partial \tau} \,\Big\} = 0, \qquad V(x,0) = l(x)
+          \]
+          \[
+            \text{where}\quad H(x, \lambda) = \max_{u \in \mathcal{U}} \min_{d \in \mathcal{D}} \; \lambda^\top f(x, u, d).
+          \]
+        </div>
+        <div class="callout warn">
+          <div class="callout-title">Set (BRS) vs. Tube (BRT) — Why the \(\min\{l - V, \dots\}\) Ratchet is Crucial</div>
+          <p class="small">
+            Without the \(l(x) - V\) floor, solving \(\partial_\tau V = H\) computes the <strong>Backward Reachable Set (BRS)</strong>: states forced to be inside the obstacle <em>at exact instant \(\tau\)</em>. If a fast drone punches straight <em>through</em> a thin pillar at \(t = 0.6\text{ s}\) and exits into open air at \(t = 2.0\text{ s}\), the BRS at \(\tau=2.0\text{ s}\) calls that state <strong>safe</strong>! The variational inequality acts as a one-way ratchet (\(\partial_\tau V \le 0\), \(V \le l\)) that remembers every mid-flight collision—producing the <strong>Backward Reachable Tube (BRT)</strong>. Switch Lab 02 to <em>"Fly-Through Pillar (BRS vs BRT)"</em> below to see this happen in 3D!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAB 2: 3D VALUE SURFACE + BRS/BRT + VISCOSITY KINKS -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 02</span>
+          <span class="lab-title">3D Level-Set Surface \(z = V(x, \tau)\) &amp; Viscosity Kinks</span>
+        </div>
+        <span class="lab-hint">Drag 3D plot to orbit · compare BRT ratchet vs BRS &amp; kinks</span>
+      </div>
+      <div class="lab-body">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:0.6rem;align-items:center">
+          <div class="seg-tabs" id="surf-mode-tabs">
+            <button type="button" class="active" data-surf-mode="wall">1. Wall Braking Surface</button>
+            <button type="button" data-surf-mode="pillar">2. Fly-Through Pillar (BRS vs BRT!)</button>
+            <button type="button" data-surf-mode="kink">3. Viscosity Kink (Go-Left / Go-Right Ridge)</button>
+          </div>
+          <div class="seg-tabs" id="surf-tube-tabs">
+            <button type="button" class="active" data-tube="brt">BRT (Tube: \(\min\{l-V, H-\partial_\tau V\}=0\))</button>
+            <button type="button" data-tube="brs">BRS (Set: \(\partial_\tau V = H\) only)</button>
+          </div>
+        </div>
+
+        <div class="lab-body dual-canvas" style="padding:0">
+          <div class="canvas-box">
+            <canvas id="surf3d-cv" class="grab" width="600" height="410" aria-label="Interactive 3D surface of V(p, v, tau) intersecting the z=0 plane"></canvas>
+          </div>
+          <div class="canvas-box">
+            <canvas id="surf2d-cv" width="600" height="410" aria-label="Synchronized 2D zero-sublevel slice and gradient field"></canvas>
+          </div>
+        </div>
+
+        <div class="ctl-grid">
+          <div class="ctl">
+            <label for="surf-tau"><span>Backward horizon \(\tau\)</span><b id="surf-tau-v">2.20 s</b></label>
+            <input id="surf-tau" type="range" min="0" max="3.2" step="0.04" value="2.20" />
+          </div>
+          <div class="ctl">
+            <label for="surf-az"><span>3D Camera Azimuth</span><b id="surf-az-v">-42°</b></label>
+            <input id="surf-az" type="range" min="-160" max="160" step="2" value="-42" />
+          </div>
+          <div class="ctl">
+            <label for="surf-el"><span>3D Camera Elevation</span><b id="surf-el-v">28°</b></label>
+            <input id="surf-el" type="range" min="10" max="68" step="1" value="28" />
+          </div>
+        </div>
+        <div class="hud-readout" id="surf-readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 3: WHEN REACHABILITY MATTERS — HOLONOMIC vs DUBINS 3D TUBE
+       ===================================================================== -->
+  <section class="chapter" id="ch-models">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 03</span> Dynamics &amp; Non-Triviality</div>
+      <h2>If You Can Stop Instantly, the Reachable Tube Is Just the Obstacle</h2>
+      <p class="chap-sub">
+        Before training a neural network or allocating megabytes of RAM for HJR, ask one diagnostic question: <strong>what physical dynamics stop the vehicle from halting instantaneously?</strong>
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card danger-card">
+        <span class="tag">Model A · Velocity-Controlled Point (\(\dot{\mathbf{p}} = \mathbf{u}\))</span>
+        <h4>BRT = Obstacle (0 m expansion)</h4>
+        <p class="small">
+          Commanding velocity directly (\(|u_i| \le 1\), no wind)—the exact model used in <em>NeuroHJR</em>—gives \(H(x, \nabla V) = \|\nabla V\|_1 \ge 0\). Plugging \(V(x,\tau) \equiv l(x)\) satisfies \(\min\{l - V, H - \partial_\tau V\} = \min\{0, \|\nabla l\|_1\} = 0\) identically! <strong>Safety reachability adds zero information beyond a raw distance check.</strong>
+        </p>
+      </div>
+      <div class="card highlight">
+        <span class="tag">Model B · Multirotor Double Integrator (\(\ddot{\mathbf{p}} = \mathbf{a} + \mathbf{d}\))</span>
+        <h4>Directional Braking Shadows (4D–6D)</h4>
+        <p class="small">
+          Horizontal acceleration is bounded by max pitch/roll tilt \(a_{\max} = g\tan\theta_{\max}\). Obstacles cast velocity-dependent "braking shadows" upwind of your motion vector; swerving and braking blend automatically along \(\mathbf{a}^* = a_{\max} \nabla_{\mathbf{v}} V / \|\nabla_{\mathbf{v}} V\|\).
+        </p>
+      </div>
+      <div class="card safe-card">
+        <span class="tag">Model C · Fixed-Wing / Cruise VTOL (3D Dubins Air3D)</span>
+        <h4>Twisted 3D Turn-Radius Tubes (Cannot Stop!)</h4>
+        <p class="small">
+          A fixed-wing drone or winged delivery VTOL stalls below \(v_{\min}\): \(\dot{x} = v\cos\psi + d_x,\; \dot{y} = v\sin\psi + d_y,\; \dot{\psi} = \omega\). Because it <em>cannot stop</em>, any state closer than its turn envelope at heading \(\psi\) is doomed—carving a <strong>helical 3D horn</strong> in \((x, y, \psi)\)!
+        </p>
+      </div>
+    </div>
+
+    <!-- LAB 3: 3D DUBINS TWISTED REACHABLE TUBE -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 03</span>
+          <span class="lab-title">3D Fixed-Wing / Cruise VTOL Reachable Tube in \((x, y, \psi)\)</span>
+        </div>
+        <span class="lab-hint">Drag 3D tube to rotate · hover/click right slice to fly optimal bank-turn evasion</span>
+      </div>
+      <div class="lab-body">
+        <div class="lab-body dual-canvas" style="padding:0">
+          <div class="canvas-box">
+            <canvas id="dubins3d-cv" class="grab" width="580" height="420" aria-label="3D twisted reachable tube over (x, y, heading psi)"></canvas>
+          </div>
+          <div class="canvas-box">
+            <canvas id="dubins2d-cv" width="580" height="420" aria-label="2D slice of Dubins BRT at selected heading psi with live optimal turn rollout"></canvas>
+          </div>
+        </div>
+        <div class="ctl-grid">
+          <div class="ctl">
+            <label for="dub-psi"><span>Aircraft Heading Slice \(\psi\)</span><b id="dub-psi-v">0° (East)</b></label>
+            <input id="dub-psi" type="range" min="-180" max="180" step="5" value="0" />
+          </div>
+          <div class="ctl">
+            <label for="dub-rot"><span>3D Orbit Angle</span><b id="dub-rot-v">-36°</b></label>
+            <input id="dub-rot" type="range" min="-180" max="180" step="2" value="-36" />
+          </div>
+        </div>
+        <div class="hud-readout" id="dub-readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 4: DRONES IN PLANNING & CONTROL — ARENA, DOCK, & FASTRACK
+       ===================================================================== -->
+  <section class="chapter" id="ch-drones">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 04</span> Planning &amp; Control of Drones</div>
+      <h2>Three Ways HJR Connects to a Real Drone Autonomy Stack</h2>
+      <p class="chap-sub">
+        HJR is <em>not</em> just "an obstacle avoidance controller." In modern aerial robotics, it plugs into planning and control in three distinct ways: <strong>(A) 4D Multi-Obstacle Safety Envelopes</strong>, <strong>(B) Reach-Avoid Landing / Go-Around Funnels</strong>, and <strong>(C) FaSTrack Planner-Tracker Error Bounds</strong>.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="prose-stack">
+        <h3>1. Avoid vs. Reach-Avoid (Precision Dock Landing)</h3>
+        <p>
+          Landing a delivery or inspection drone on a \(1.8\text{ m}\) charging dock in gusty crosswinds is a <strong>Reach-Avoid game</strong> (Margellos &amp; Lygeros 2011; Fisac et al. 2015): reach the safe touchdown box \(\mathcal{T} = \{r(x) \ge 0\}\) (centered on pad, gentle sink rate \(v_z \in [-1.4, 0.3]\text{ m/s}\)) while avoiding deck strikes, coaming walls, and hard slams \(\mathcal{F} = \{l(x) < 0\}\):
+        </p>
+        <div class="math-card">
+          <span class="math-label">Reach-Avoid Dynamic Programming Step</span>
+          \[
+            V_{\text{RA}}(x, \tau+\delta) = \min\!\Big\{\, l(x),\; \max\!\Big\{\, r(x),\; \max_u \min_d V_{\text{RA}}\big(x + \delta f,\, \tau\big) \Big\} \Big\}
+          \]
+        </div>
+        <p class="small">
+          Whenever a wind gust pushes the descending drone across \(V_{\text{RA}}(x) = 0\), safe touchdown is no longer guaranteed—triggering an <strong>automatic go-around climb</strong> before the aircraft gets trapped near the deck!
+        </p>
+      </div>
+
+      <div class="prose-stack">
+        <h3>2. FaSTrack: Decoupling Fast Planners from Nonlinear Quadrotors</h3>
+        <p>
+          Global planners (A*, RRT*, Jump Point Search) run in milliseconds on 3D voxel maps only because they pretend the drone is a kinematic point \(\dot{\hat{p}} = \hat{v}\). When a real 6D/10D quadrotor (\(\dot{p}=v,\, \dot{v}=g\tan\theta+d,\, \dot{\theta}=\omega\)) tries to track sharp corners in wind, pitch lag causes <strong>corner overshoot into obstacles</strong>.
+        </p>
+        <p>
+          <strong>FaSTrack</strong> (Herbert, Chen, Bansal &amp; Tomlin, CDC 2017) treats the <em>planner itself</em> as a bounded adversary in relative error coordinates \(e = p - \hat{p}\)! Offline HJR computes the tightest <strong>Tracking Error Bound (TEB)</strong> bubble and optimal pitch-rate tracker \(\omega^*(e, v, \theta)\). Online, you simply <strong>inflate map obstacles by TEB</strong> and let any fast geometric planner run freely—<strong>map-independent, zero online PDE solves!</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- LAB 4: 3-IN-1 DRONE DECK (4D ARENA + 4D REACH-AVOID DOCK + FASTRACK) -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 04</span>
+          <span class="lab-title">Multi-Mode Drone Reachability Deck</span>
+        </div>
+        <div class="seg-tabs" id="drone-deck-tabs">
+          <button type="button" class="active" data-drone-tab="arena">A · 4D Arena &amp; Union Gap</button>
+          <button type="button" data-drone-tab="dock">B · 4D Dock Landing Reach-Avoid</button>
+          <button type="button" data-drone-tab="fastrack">C · FaSTrack Planner + 6D Lagged Quad</button>
+        </div>
+      </div>
+      <div class="lab-body split">
+        <div class="canvas-box">
+          <canvas id="drone-main-cv" width="640" height="540" aria-label="Main interactive drone simulation view"></canvas>
+        </div>
+        <div class="controls-col">
+          <div class="predict-box" id="drone-prompt"></div>
+          <div class="canvas-box" style="max-width:270px;justify-self:center">
+            <canvas id="drone-pad-cv" width="260" height="260" aria-label="Interactive velocity vector pad or relative tracking phase portrait"></canvas>
+          </div>
+          <div id="drone-dyn-controls" class="controls-col"></div>
+          <div class="hud-readout" id="drone-readout" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 5: SAFETY FILTERS COMPARED — APF vs CBF vs HJR vs CBVF
+       ===================================================================== -->
+  <section class="chapter" id="ch-filters">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 05</span> HJR vs. CBFs vs. APFs</div>
+      <h2>Why Hand-Crafted CBFs Go QP-Infeasible Under Actuator Limits—and How CBVFs Fix Both</h2>
+      <p class="chap-sub">
+        A safety filter sits right above the attitude controller, modifying a nominal command \(\mathbf{u}_{\text{nom}}\) (from a human pilot, MPC, or RL policy) <em>minimally</em> to preserve safety. Compare the three paradigms at the control-space level.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Artificial Potential Field (APF)</th>
+            <th>High-Order CBF-QP (HOCBF)</th>
+            <th>HJR Least-Restrictive Switch</th>
+            <th>HJR-CBF / CBVF-QP (Unification)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Core Equation</strong></td>
+            <td>\(\mathbf{u} = \text{sat}(\mathbf{u}_{\text{nom}} - \nabla U_{\text{rep}}(p))\)</td>
+            <td>\(\min_{\|\mathbf{u}\|\le a_{\max}} \|\mathbf{u}-\mathbf{u}_{\text{nom}}\|^2\) s.t. \(\ddot{h}+2k\dot{h}+k^2 h \ge 0\)</td>
+            <td>\(\mathbf{u}_{\text{nom}}\) if \(V(x) > \varepsilon\), else \(\mathbf{u}^*(x) = \arg\max_u \nabla V\cdot f\)</td>
+            <td>\(\min_{\|\mathbf{u}\|\le a_{\max}} \|\mathbf{u}-\mathbf{u}_{\text{nom}}\|^2\) s.t. \(\nabla_x V\cdot f(x,\mathbf{u},\mathbf{d}^*) \ge -\gamma V\)</td>
+          </tr>
+          <tr>
+            <td><strong>Respects \(\|\mathbf{u}\|\le a_{\max}\) &amp; Gusts?</strong></td>
+            <td><span class="pill unsafe">No</span> Clips after asking for infinite force</td>
+            <td><span class="pill warn">Only if \(h\) is valid</span> Linear safe edge \(v \le kh\) crosses true parabola \(\implies\) <strong>QP Infeasible!</strong></td>
+            <td><span class="pill safe">Yes (Exact)</span> Built directly into Hamiltonian \(H\)</td>
+            <td><span class="pill safe">Yes (Exact)</span> Guaranteed feasible on \(\{V \ge 0\}\)</td>
+          </tr>
+          <tr>
+            <td><strong>Control Smoothness</strong></td>
+            <td>Smooth until oscillation</td>
+            <td>Smooth until QP infeasibility spike</td>
+            <td><span class="pill warn">Bang-bang chatter</span> at \(V=\varepsilon\)</td>
+            <td><span class="pill safe">Smooth exponential blending</span></td>
+          </tr>
+          <tr>
+            <td><strong>Deadlock / Liveness</strong></td>
+            <td>Severe U-trap local minima</td>
+            <td>Can stall symmetrically in front of obstacles</td>
+            <td>Pure safety filter (needs planner for routing)</td>
+            <td>Smooth swerving; pairs cleanly with global planner</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LAB 5: MULTI-FILTER ARENA + LIVE CONTROL-SPACE QP MICROSCOPE -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 05</span>
+          <span class="lab-title">5-Filter Arena Race &amp; Live Control-Space \((u_x, u_y)\) QP Microscope</span>
+        </div>
+        <div class="seg-tabs" id="filt-scen-tabs">
+          <button type="button" class="active" data-fscen="gap">1. High-Speed Pillar Gap</button>
+          <button type="button" data-fscen="headon">2. Head-On Pillar (QP Infeasibility!)</button>
+          <button type="button" data-fscen="utrap">3. U-Trap Local Minimum</button>
+        </div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-body dual-canvas" style="padding:0">
+          <div class="canvas-box">
+            <canvas id="filt-arena-cv" width="580" height="470" aria-label="2D arena showing trajectories of 5 safety filters"></canvas>
+          </div>
+          <div class="canvas-box">
+            <canvas id="filt-qp-cv" width="580" height="470" aria-label="Control-space actuator disc showing HOCBF vs CBVF half-space constraints at scrubbed time"></canvas>
+          </div>
+        </div>
+        <div class="ctl-grid">
+          <div class="ctl">
+            <label for="f-speed"><span>Nominal Cruise Speed</span><b id="f-speed-v">3.7 m/s</b></label>
+            <input id="f-speed" type="range" min="1.5" max="4.0" step="0.1" value="3.7" />
+          </div>
+          <div class="ctl">
+            <label for="f-gust"><span>Gust Direction (\(0.5\text{ m/s}^2\))</span><b id="f-gust-v">40°</b></label>
+            <input id="f-gust" type="range" min="0" max="355" step="5" value="40" />
+          </div>
+          <div class="ctl">
+            <label for="f-cbf-k"><span>HOCBF Gain \(k\)</span><b id="f-cbf-k-v">2.0 /s</b></label>
+            <input id="f-cbf-k" type="range" min="0.5" max="3.2" step="0.1" value="2.0" />
+          </div>
+          <div class="ctl">
+            <label for="f-scrub"><span>Inspect Step Along Flight</span><b id="f-scrub-v">t = 2.40 s</b></label>
+            <input id="f-scrub" type="range" min="0" max="100" step="1" value="28" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="f-fly-btn" type="button">▶ Re-Fly All 5 Controllers</button>
+          <span class="small muted" style="align-self:center">Click arena to move ★ Goal · Shift+Click to move ● Start · Scrub slider to inspect the QP actuator disc on the right!</span>
+        </div>
+        <div class="hud-readout" id="f-readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 6: PINNS FOR HJR — LIVE 60FPS IN-BROWSER PINN TRAINING STUDIO
+       ===================================================================== -->
+  <section class="chapter" id="ch-pinns">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 06</span> Physics-Informed Neural Networks (DeepReach)</div>
+      <h2>Breaking the \(N^d\) Grid Wall—and the Three Traps That Break Naive PINNs</h2>
+      <p class="chap-sub">
+        At 50 points per axis, a 4D value array takes <strong>25 MB</strong>, a 6D quadrotor takes <strong>62 GB</strong>, and a 10D quadrotor-with-payload takes <strong>390 Petabytes</strong>. A Physics-Informed Neural Network replaces the grid with smooth weights \(V_\theta(x, \tau)\), computing exact \(\nabla_x V_\theta, \partial_\tau V_\theta\) via automatic differentiation at random collocation points.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="prose-stack">
+        <h3>Why DeepReach (Bansal &amp; Tomlin, ICRA 2021) Works</h3>
+        <p>
+          Training a PINN on a first-order Hamilton-Jacobi variational inequality is notoriously unforgiving because \(V\) is non-smooth (viscosity kinks) and information propagates causally outward from \(\tau = 0\). Three architectural ingredients separate a working HJR PINN from a broken one:
+        </p>
+        <ol>
+          <li>
+            <strong>Solve the Time-Dependent PDE \(V_\theta(x, \tau)\), Never Free Steady-State:</strong>
+            The steady inequality \(\min\{l(x) - V, H(x,\nabla V)\} = 0\) admits infinitely many spurious solutions—any constant \(V(x) \equiv c \le \min l(x)\) gives \(l - c \ge 0\) and \(H(x, \mathbf{0}) = 0\), yielding <strong>zero PDE loss</strong> while marking the entire universe unsafe!
+          </li>
+          <li>
+            <strong>Exact Boundary Parametrization at \(\tau = 0\):</strong>
+            Write \(V_\theta(x, \tau) = l(x) + \frac{\tau}{\tau_{\max}} \text{NN}_\theta(x, \tau)\) so \(V_\theta(x, 0) \equiv l(x)\) holds identically with zero boundary error.
+          </li>
+          <li>
+            <strong>Sinusoidal Activations (SIREN) + Temporal Curriculum:</strong>
+            Grow sampled \(\tau \in [0, \tau_{\text{cur}}(k)]\) linearly from \(0 \to \tau_{\max}\) so characteristics propagate outward from \(\tau=0\), and use \(\sin(\omega_0 z)\) activations whose derivatives \(\cos(\omega_0 z)\) represent sharp gradient transitions far better than ReLU (whose second derivative is zero almost everywhere!).
+          </li>
+        </ol>
+      </div>
+
+      <div class="prose-stack">
+        <div class="math-card">
+          <span class="math-label">Self-Supervised DeepReach HJI-VI Residual Loss</span>
+          \[
+            \mathcal{L}_{\text{HJI}}(\theta) = \frac{1}{B} \sum_{i=1}^{B} \Big( \min\!\big\{\, l(x_i) - V_\theta(x_i, \tau_i),\;\; H(x_i, \nabla_x V_\theta) - \partial_\tau V_\theta \,\big\} \Big)^2
+          \]
+          <div class="eq-annot">
+            <span class="eq-chip">Zero ground-truth grid labels needed</span>
+            <span class="eq-chip">2nd-order backprop through \(\nabla_x V_\theta\)</span>
+          </div>
+        </div>
+        <div class="callout insight">
+          <div class="callout-title">Try Breaking It Live Below!</div>
+          <p class="small">
+            Lab 06 runs a <strong>real neural network trainer with analytical 2nd-order PDE backpropagation + Adam in JavaScript</strong> right inside your browser! Click <strong>Train Live</strong> with <code>SIREN + Curriculum</code> and watch the black zero-contour lock onto the gold analytical parabola in seconds. Then switch to <code>Steady-State (No τ)</code> or <code>ReLU</code> and watch why naive PINN formulations fail!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAB 6: LIVE IN-BROWSER PINN STUDIO -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 06</span>
+          <span class="lab-title">Live In-Browser PINN Training Studio (Real 2nd-Order Autodiff + Adam)</span>
+        </div>
+        <span class="lab-hint">Train live in JS or inspect 3,000-step offline SIREN snapshots</span>
+      </div>
+      <div class="lab-body">
+        <div style="display:flex;flex-wrap:wrap;gap:0.6rem;justify-content:space-between;align-items:center">
+          <div class="seg-tabs" id="pinn-act-tabs">
+            <button type="button" class="active" data-act="siren">SIREN \(\sin(\omega_0 z)\)</button>
+            <button type="button" data-act="tanh">Tanh MLP</button>
+            <button type="button" data-act="relu">ReLU (Broken \(\nabla^2\))</button>
+          </div>
+          <div class="seg-tabs" id="pinn-form-tabs">
+            <button type="button" class="active" data-form="deepreach">DeepReach Time-Dependent VI</button>
+            <button type="button" data-form="steady">Steady-State \(\partial_\tau V=0\) (Spurious Collapse!)</button>
+          </div>
+          <label class="chk"><input id="pinn-curr" type="checkbox" checked />Temporal Curriculum (\(\tau: 0 \to \tau_{\max}\))</label>
+        </div>
+
+        <div class="lab-body dual-canvas" style="padding:0">
+          <div class="canvas-box">
+            <canvas id="pinn-val-cv" width="580" height="400" aria-label="Learned PINN value field V_theta(p, v, tau_max) vs exact analytical boundary"></canvas>
+          </div>
+          <div class="canvas-box">
+            <canvas id="pinn-loss-cv" width="580" height="400" aria-label="Pointwise PDE residual heatmap and live log-loss curve"></canvas>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" id="pinn-toggle-btn" type="button">▶ Train Live in Browser</button>
+          <button class="btn" id="pinn-reset-btn" type="button">↺ Reset Random Weights</button>
+          <button class="btn" id="pinn-offline-btn" type="button">★ Load Converged 3,000-Step SIREN (IoU 0.993)</button>
+        </div>
+        <div class="hud-readout" id="pinn-readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 7: FORENSIC AUDIT OF ARXIV:2512.01897 (NEUROHJR)
+       ===================================================================== -->
+  <section class="chapter" id="ch-paper">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 07</span> Forensic Paper Dissection · arXiv:2512.01897</div>
+      <h2>Reading <em>NeuroHJR</em> Critically: Six Mathematical Flaws &amp; How to Repair Them</h2>
+      <p class="chap-sub">
+        Halder, Majumder, Rakshith, Shah &amp; Sundaram (<em>NeuroHJR</em>, Dec 2025) propose a \(3\times 128\) \(\tanh\) network \((P_x, P_y) \mapsto (u_x, u_y, V)\) for a 2D velocity-controlled UGV (\(\dot{\mathbf{x}} = \mathbf{u},\; |u_i| \le 1\)) crossing a \(45\text{ m} \times 45\text{ m}\) field with 10 obstacles (\(R=2\text{ m},\; \delta=1\text{ m} \implies R_d=3\text{ m}\)). With the first-principles tools from Chapters 2–6, we can audit every equation directly.
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card danger-card">
+        <span class="tag">Flaw 1 · Eq. (14) Dynamics</span>
+        <h4>Trivial Reachable Set (\(\mathcal{B} \equiv \mathcal{F}\))</h4>
+        <p class="small">
+          Because \(\dot{\mathbf{x}} = \mathbf{u}\) has zero inertia and zero disturbance, the vehicle stops in \(0.0\text{ m}\). True safety HJR expands the \(3\text{ m}\) obstacle discs by <strong>0.00 m</strong>. What the vehicle actually needs is <em>shortest-path routing</em> (static Eikonal HJB), not safety reachability.
+        </p>
+      </div>
+      <div class="card danger-card">
+        <span class="tag">Flaw 2 · Eqs. (18) &amp; (21) PDE</span>
+        <h4>Missing Stage Cost \(\implies \nabla V \equiv \mathbf{0}\)</h4>
+        <p class="small">
+          Minimum-time HJB requires stage cost \(+1\): \(1 + \min_{\mathbf{u}} \nabla V\cdot\mathbf{u} = 1 - \|\nabla V\|_1 = 0\). Dropping \(+1\) in Eq. (18) yields \(-\|\nabla V\|_1 = 0 \implies V = \text{const}\)! Worse, Eq. (21) minimizes \((\nabla V_\theta \cdot \mathbf{u}_\theta)^2\), satisfied trivially when \(\nabla V_\theta = \mathbf{0}\) or \(\mathbf{u}_\theta \perp \nabla V_\theta\).
+        </p>
+      </div>
+      <div class="card danger-card">
+        <span class="tag">Flaw 3 · Eq. (23) Obstacle Loss</span>
+        <h4>Identically Zero Parameter Gradient!</h4>
+        <p class="small">
+          Eq. (23) writes \(\mathcal{L}_{\text{obstacle}} = \frac{1}{N}\sum (\max(0, R_d - d_i))^2\) where \(d_i = \|\mathbf{P}^{(i)} - \mathbf{p}_o\|\) depends only on fixed collocation coordinates \(\mathbf{P}^{(i)}\), <em>not</em> on network outputs \((u_\theta, V_\theta)\)! Thus \(\nabla_\theta \mathcal{L}_{\text{obstacle}} \equiv \mathbf{0}\) (and on safe-region points \(d_i > R_d\), even the value is zero!).
+        </p>
+      </div>
+      <div class="card danger-card">
+        <span class="tag">Flaw 4 · Eqs. (5), (8), (9) Value</span>
+        <h4>Unsigned Distances &amp; Missing Obstacles</h4>
+        <p class="small">
+          \(V_F(x,0) = \min_{y\in\mathcal{S}_0}\|x-y\| \ge 0\) and \(V_B(x,T) = \min_{y\in\mathcal{T}}\|x-y\| \ge 0\) never reference obstacles at all, and \(V = \max\{V_F, -V_B\} \ge V_F \ge 0\) everywhere—making the paper's safety condition "\(V(x,t) \ge 0\)" tautologically true at every point, including inside obstacles!
+        </p>
+      </div>
+      <div class="card highlight">
+        <span class="tag">Flaw 5 · Map Overfitting vs. Speed</span>
+        <h4>10,000 Epochs per Map vs. 5 ms Dijkstra</h4>
+        <p class="small">
+          Obstacles are hardcoded into the loss rather than passed to the network: moving one cylinder requires retraining from scratch. Meanwhile, solving the <em>exact</em> 2D Eikonal HJB equation on a \(181\times 181\) grid takes <strong>~5 milliseconds</strong> right in your browser below!
+        </p>
+      </div>
+      <div class="card safe-card">
+        <span class="tag">How to Repair It Properly</span>
+        <h4>From NeuroHJR to Verified DeepReach</h4>
+        <p class="small">
+          (1) Model real 4D–10D inertia/turn/gust dynamics; (2) enforce time-dependent HJI-VI (or \(1 - \|\nabla T\| = 0\) for time-to-goal); (3) condition \(V_\theta(x, \tau; o_1,\dots,o_k)\) on relative obstacle features or local ESDF; (4) certify \(\{V_\theta > \delta\}\) via conformal rollout bounds.
+        </p>
+      </div>
+    </div>
+
+    <!-- LAB 7: NEUROHJR FORENSIC ARENA -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 07</span>
+          <span class="lab-title">The Paper's \(45\text{ m} \times 45\text{ m}\) Field — As-Written vs. Repaired HJB Solver</span>
+        </div>
+        <div class="seg-tabs" id="neuro-map-tabs">
+          <button type="button" class="active" data-nmap="paper">Paper Cluttered Map (10 Cylinders)</button>
+          <button type="button" data-nmap="utrap">Concave U-Trap</button>
+          <button type="button" data-nmap="shuffle">Shuffle Random 10</button>
+        </div>
+      </div>
+      <div class="lab-body split">
+        <div class="canvas-box">
+          <canvas id="neuro-map-cv" width="620" height="540" aria-label="45m by 45m obstacle field comparing NeuroHJR as-written, 1-step lookahead fix, APF, and exact Eikonal HJB"></canvas>
+        </div>
+        <div class="controls-col">
+          <div class="predict-box">
+            <strong>Interactive Audit:</strong> Drag any red cylinder! Every frame, your browser solves the <strong>exact static HJB Eikonal PDE (\(\|\nabla T\| = 1\))</strong> across 32,761 grid nodes in milliseconds, and rolls out (1) <em>NeuroHJR As-Written</em> (\(\nabla_\theta \mathcal{L}_{\text{obs}}=0\)), (2) <em>Generous 1-Step Lookahead Fix</em> (\(\mathbf{p} + \Delta t\,\mathbf{u}_\theta\)), (3) <em>APF</em>, and (4) <em>Exact \(-\nabla T\) Optimal HJB</em>.
+          </div>
+          <div class="ctl">
+            <label for="neuro-rho"><span>UGV Sensor Trigger Radius \(\rho\) (Paper Table 3)</span><b id="neuro-rho-v">5.0 m</b></label>
+            <input id="neuro-rho" type="range" min="3.1" max="9.0" step="0.2" value="5.0" />
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--safe)"></i>Exact Eikonal HJB (\(-\nabla T\))</span>
+            <span><i style="background:var(--c-apf)"></i>APF Baseline</span>
+            <span><i style="background:var(--c-cbf)"></i>1-Step Lookahead Fix</span>
+            <span><i style="background:var(--unsafe)"></i>NeuroHJR As-Written (crashes!)</span>
+          </div>
+          <div class="hud-readout" id="neuro-readout"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 8: FORMAL VERIFICATION OF NEURAL VALUE FUNCTIONS
+       ===================================================================== -->
+  <section class="chapter" id="ch-verify">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 08</span> Trust &amp; Certification</div>
+      <h2>How Do You Trust a Neural Network With Aircraft Safety? Conformal \(\delta\)-Verification</h2>
+      <p class="chap-sub">
+        A PINN has no worst-case guarantee out of the box: a tiny PDE residual can still hide <em>false-safe</em> pockets where \(V_\theta(x) > 0\) yet the induced controller crashes. Lin &amp; Bansal (ICRA 2023 / 2024) turn closed-loop rollouts + Clopper-Pearson statistics into a rigorous probabilistic safety certificate.
+      </p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 08</span>
+          <span class="lab-title">Conformal Safety Level Calibration \(\{x : V_\theta(x) > \delta\}\)</span>
+        </div>
+        <div class="seg-tabs" id="ver-model-tabs">
+          <button type="button" class="active" data-vmod="small">Under-Trained SIREN (300 steps, 133 crashes)</button>
+          <button type="button" data-vmod="full">Converged SIREN (3,000 steps, 10 crashes)</button>
+        </div>
+      </div>
+      <div class="lab-body split">
+        <div class="canvas-box">
+          <canvas id="ver-cv" width="640" height="430" aria-label="Phase plane showing counterexample rollouts and calibrated safety threshold delta"></canvas>
+        </div>
+        <div class="controls-col">
+          <div class="predict-box">
+            <strong>Calibrate before flight:</strong> Red dots are states the network claimed were safe (\(V_\theta > 0\)) that <strong>crashed under worst-case gusts</strong> during 12,000 calibration rollouts. Slide \(\delta\) up until every red dot turns gray (excluded), or click Auto-Calibrate!
+          </div>
+          <div class="ctl">
+            <label for="ver-delta"><span>Safety Buffer Level \(\delta\)</span><b id="ver-delta-v">0.000 m</b></label>
+            <input id="ver-delta" type="range" min="0" max="0.50" step="0.005" value="0.000" />
+          </div>
+          <div class="ctl">
+            <label for="ver-conf"><span>Required Confidence \(1 - \beta\)</span><b id="ver-conf-v">99.9%</b></label>
+            <input id="ver-conf" type="range" min="2" max="5" step="0.5" value="3" />
+          </div>
+          <div class="btn-row">
+            <button class="btn primary" id="ver-auto-btn" type="button">✓ Auto-Set Certified \(\delta^*\)</button>
+            <button class="btn" id="ver-zero-btn" type="button">Reset \(\delta = 0\)</button>
+          </div>
+          <div class="hud-readout" id="ver-readout"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 9: INDUSTRY PRODUCTION PLAYBOOK & FEASIBILITY CALCULATOR
+       ===================================================================== -->
+  <section class="chapter" id="ch-production">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 09</span> Industrial Feasibility &amp; Spotting Use Cases</div>
+      <h2>Is HJR Actually Feasible in Production Drone Stacks? The Honest Engineering Verdict</h2>
+      <p class="chap-sub">
+        <strong>Yes—when applied to the right 3D–5D relative subproblem, and almost never as a monolithic full-map neural planner.</strong> Here is how Staff Autonomy Engineers at companies building Skydio/Zipline/Wing/Defense-class UAVs spot high-ROI HJR use cases and ship them safely.
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card safe-card">
+        <span class="tag">Tier 1 · Ships Today on MCU / CPU (High ROI)</span>
+        <h4>1D–4D Offline Lookup Tables + CBVF/RTA</h4>
+        <p class="small">
+          <strong>Where to spot it:</strong> Dock landing go-around funnels (4D), fixed-wing/VTOL Air3D intruder deconfliction (3D, like ACAS sXu), geofence braking envelopes in wind (2D–4D), and battery-vs-headwind return-to-home alarms (3D).<br/>
+          <strong>Footprint:</strong> \(0.1\text{–}4.5\text{ MB}\) quantized LUT, <strong>\(&lt; 3\,\mu\text{s}\)</strong> trilinear/quadrilinear lookup in C++ on STM32H7 or Jetson.
+        </p>
+      </div>
+      <div class="card safe-card">
+        <span class="tag">Tier 1 · Ships Today with Any Planner</span>
+        <h4>FaSTrack Tracking-Error Bubbles</h4>
+        <p class="small">
+          <strong>Where to spot it:</strong> Fast A*/RRT*/MPPI planners in dense forests, warehouses, or urban canyons where agile quadrotors cut corners under gusts.<br/>
+          <strong>Why it wins:</strong> Solved <em>once per airframe</em> in relative coordinates (independent of obstacle map!). Online cost is literally inflating your ESDF/voxel radius by \(\text{TEB}\) meters + a \(1\,\mu\text{s}\) table lookup.
+        </p>
+      </div>
+      <div class="card highlight">
+        <span class="tag">Tier 2 · Emerging Production (Orin / Thor GPU)</span>
+        <h4>ASTM F3269 Run-Time Assurance &amp; Verified 6D–10D PINNs</h4>
+        <p class="small">
+          <strong>Where to spot it:</strong> Wrapping unverified end-to-end RL / Vision-Language-Action flight policies (RTA Simplex switch), or 8D–12D coupled dynamics that cannot decompose (slung-load cable swing, aggressive SE(3) perching, variable-payload envelopes).<br/>
+          <strong>Rule:</strong> Never fly an unverified PINN; always pair DeepReach + Conformal \(\delta\)-shift + verified backup controller.
+        </p>
+      </div>
+    </div>
+
+    <!-- LAB 9: INTERACTIVE DRONE FEASIBILITY & ARCHITECTURE CALCULATOR -->
+    <div class="lab">
+      <div class="lab-bar">
+        <div class="lab-title-group">
+          <span class="lab-badge">Lab 09</span>
+          <span class="lab-title">Production Drone Envelope &amp; Architecture Sizer</span>
+        </div>
+        <span class="lab-hint">Configure your drone platform to compute safety margins, RAM budget &amp; recommended stack</span>
+      </div>
+      <div class="lab-body split">
+        <div class="controls-col">
+          <div class="seg-tabs" id="ind-preset-tabs">
+            <button type="button" class="active" data-ipre="dock">Delivery Dock Landing</button>
+            <button type="button" data-ipre="forest">High-Speed Forest RL Wrapper</button>
+            <button type="button" data-ipre="vtol">Fixed-Wing VTOL Deconfliction</button>
+            <button type="button" data-ipre="slung">10D Slung-Load Helicopter</button>
+            <button type="button" data-ipre="indoor">Slow Indoor Inspection</button>
+          </div>
+          <div class="ctl-grid">
+            <div class="ctl">
+              <label for="ind-v"><span>Cruise / Approach Speed \(v\)</span><b id="ind-v-v">6.0 m/s</b></label>
+              <input id="ind-v" type="range" min="0.5" max="22.0" step="0.5" value="6.0" />
+            </div>
+            <div class="ctl">
+              <label for="ind-tilt"><span>Max Braking Tilt \(\theta_{\max}\)</span><b id="ind-tilt-v">25°</b></label>
+              <input id="ind-tilt" type="range" min="10" max="45" step="1" value="25" />
+            </div>
+            <div class="ctl">
+              <label for="ind-gust"><span>99th-Pct Gust Accel \(d_{\max}\)</span><b id="ind-gust-v">1.2 m/s²</b></label>
+              <input id="ind-gust" type="range" min="0.0" max="4.0" step="0.1" value="1.2" />
+            </div>
+            <div class="ctl">
+              <label for="ind-lat"><span>Sense + Actuation Latency</span><b id="ind-lat-v">90 ms</b></label>
+              <input id="ind-lat" type="range" min="10" max="300" step="10" value="90" />
+            </div>
+            <div class="ctl">
+              <label for="ind-dim"><span>Irreducible State Dim \(D\)</span><b id="ind-dim-v">4D</b></label>
+              <input id="ind-dim" type="range" min="2" max="10" step="1" value="4" />
+            </div>
+          </div>
+          <div class="canvas-box">
+            <canvas id="ind-envelope-cv" width="640" height="195" aria-label="Breakdown of required safety buffer in meters and grid vs PINN memory scaling"></canvas>
+          </div>
+        </div>
+        <div class="controls-col" id="ind-verdict"></div>
+      </div>
+    </div>
+
+    <details class="drawer">
+      <summary>▸ 4-Phase Production Rollout Checklist (How to Ship HJR Without Grounding the Fleet)</summary>
+      <div class="drawer-body small">
+        <p><strong>Phase 1 — Flight-Log Disturbance Identification:</strong> Never guess \(d_{\max}\). Extract position/velocity tracking residuals from 100+ hours of windy flight logs by altitude band to set empirical 99.9th-percentile gust and latency bounds.</p>
+        <p><strong>Phase 2 — Offline Validation Against Closed Forms:</strong> Validate your 3D/4D grid or PINN on 1D head-on and oblique slices against analytical braking parabolas; add the measured discretization optimism \(\varepsilon_{\text{grid}}\) directly into your switching/barrier level.</p>
+        <p><strong>Phase 3 — Shadow-Mode Telemetry (Zero Actuation Authority):</strong> Deploy the lookup table / PINN onboard in passive shadow mode alongside PX4/ArduPilot. Log every \(V(x) &lt; \varepsilon\) alarm during aggressive human/autonomy flights to measure false-positive conservatism before closing the loop.</p>
+        <p><strong>Phase 4 — Closed-Loop CBVF-QP / ASTM F3269 RTA Switch:</strong> Enable smooth CBVF filtering (for nominal comfort) backed by a hard \(V(x) \le \varepsilon_{\text{crit}}\) RTA emergency maneuver (brake-to-hover or go-around climb).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- =====================================================================
+       CHAPTER 10: INTERACTIVE ENGINEERING DIAGNOSTIC
+       ===================================================================== -->
+  <section class="chapter" id="ch-quiz">
+    <div class="chap-header">
+      <div class="eyebrow"><span class="chap-num">Chapter 10</span> Spot the Use Case</div>
+      <h2>Autonomy Lead Diagnostic: Pick the Right Architecture for 5 Industry Scenarios</h2>
+      <p class="chap-sub">Test your intuition across five real-world aerial robotics design reviews.</p>
+    </div>
+    <div class="card-grid" id="quiz-container"></div>
+  </section>
+
+  <footer>
+    <p>
+      <strong>Primary References:</strong>
+      Mitchell, Bayen &amp; Tomlin (<em>IEEE TAC</em> 2005) · Bansal, Chen, Herbert &amp; Tomlin (<em>CDC</em> 2017) · Herbert et al., <em>FaSTrack</em> (<em>CDC</em> 2017 / <em>TAC</em> 2021) · Choi et al., <em>CBVF</em> (<em>CDC</em> 2021) · Bansal &amp; Tomlin, <em>DeepReach</em> (<em>ICRA</em> 2021) · Lin &amp; Bansal, <em>Conformal Verification</em> (<em>ICRA</em> 2023 / 2024) · Halder et al., <em>NeuroHJR</em> (<a href="https://arxiv.org/abs/2512.01897" target="_blank" rel="noopener">arXiv:2512.01897</a>, 2025) · ASTM F3269-21 Run-Time Assurance.
+    </p>
+    <p style="margin-top:0.4rem">
+      All PDE tensors, 3D Dubins tubes, 4D Reach-Avoid funnels, FaSTrack bounds, and SIREN PINNs in this lab are reproducible via <code>python3 generate_data.py</code>. Fully functional offline &amp; via direct <code>file://</code> open.
+    </p>
+  </footer>
+
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script defer src="data.js"></script>
+<script defer src="core.js"></script>
+<script defer src="labs-hjr.js"></script>
+<script defer src="labs-pinn.js"></script>
+</body>
+</html>
