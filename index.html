@@ -876,35 +876,37 @@
 </main>
 
 <!-- =====================================================================
-     SLIDE-OVER SESSION BYOK AI STUDY TUTOR
+     SLIDE-OVER STUDY TUTOR (FREE PUBLIC MODEL + WEBGPU + OPTIONAL BYOK)
      ===================================================================== -->
 <div class="tutor-backdrop" id="tutor-backdrop"></div>
 <aside class="tutor-drawer" id="tutor-drawer" aria-label="Interactive AI Study Tutor">
   <div class="tutor-head">
-    <h3>✦ Study Tutor (Bring Your Own Key)</h3>
+    <h3>✦ Interactive Study Tutor</h3>
     <button class="btn" id="tutor-close" type="button">✕ Close</button>
   </div>
   <div class="tutor-config">
     <div class="tutor-row">
       <select id="tutor-provider" aria-label="LLM Provider">
-        <option value="gemini">Google Gemini</option>
-        <option value="anthropic">Anthropic Claude</option>
-        <option value="openai">OpenAI ChatGPT</option>
-        <option value="openrouter">OpenRouter (Any)</option>
+        <option value="public_cloud" selected>Public Cloud (Free · No Key)</option>
+        <option value="webgpu">Local WebGPU (Browser · No Key)</option>
+        <option value="gemini">Google Gemini (BYOK)</option>
+        <option value="anthropic">Anthropic Claude (BYOK)</option>
+        <option value="openai">OpenAI ChatGPT (BYOK)</option>
+        <option value="openrouter">OpenRouter (BYOK)</option>
       </select>
       <select id="tutor-model" aria-label="Model"></select>
     </div>
-    <div style="display:flex;gap:0.4rem">
+    <div id="tutor-key-row" style="display:none;gap:0.4rem">
       <input id="tutor-key" type="password" autocomplete="off" spellcheck="false" placeholder="Session API key..." aria-label="Session API Key" />
       <button class="btn" id="tutor-clear-key" type="button" title="Wipe key from session">Clear</button>
     </div>
-    <div class="tutor-privacy">
-      <strong>Session-only privacy:</strong> Your key stays in this browser tab's memory (`sessionStorage`), is wiped when the tab closes, and connects directly from your browser to the selected provider over HTTPS.
+    <div class="tutor-privacy" id="tutor-privacy-note">
+      <strong>✓ Ready to chat immediately:</strong> Connected to the public open-weights <code>GPT-OSS 20B</code> endpoint (no API key required).
     </div>
   </div>
   <div class="tutor-messages" id="tutor-messages">
     <div class="tutor-msg assistant">
-      Ask anything about Hamilton-Jacobi Reachability, viscosity solutions, CBFs vs. CBVFs, PINNs, or drone deployment! I automatically see which section and simulator readout you are viewing.
+      Ask anything right away—no API key needed! I automatically see which section and live simulator readout you are viewing.
     </div>
   </div>
   <div class="tutor-prompts">

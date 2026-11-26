@@ -40,4 +40,4 @@ This regenerates both `data.json` (inspectable raw metrics and quantized tensors
 7. **Cluttered Navigation Formulation Lab**: Step-by-step progression on a $45\,\text{m} \times 45\,\text{m}$ obstacle field comparing uncoupled collocation losses, $\rho$-triggered 1-step lookahead policies, classical APF, and exact Eikonal HJB wavefronts.
 8. **Conformal / Scenario Verification Explorer**: Interactive $\delta$-level calibration and Clopper-Pearson safety certificate calculator.
 9. **Industry Feasibility & Drone Architecture Calculator** + **5-Scenario Autonomy Engineering Diagnostic**.
-10. **In-Page Session BYOK Study Tutor**: Connect your own ephemeral session API key (Google Gemini, Anthropic Claude, OpenAI, or OpenRouter) right inside the page.
+10. **Instant Zero-Key Public Study Tutor + Optional BYOK**: Works out of the box with no API key via a public `GPT-OSS 20B` endpoint or 100% local in-browser WebGPU (`Qwen 2.5` / `Llama 3.2`), plus optional session-only BYOK support for Google Gemini, Anthropic Claude, OpenAI, and OpenRouter.
